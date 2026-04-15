@@ -35,7 +35,9 @@ feature of this specification.
 
 "..." in examples is used as shorthand for elements defined outside of this document.
 
-# Transfer Log Format {#transfer_log_format}
+# Specification
+
+## JCR
 
 ```
 ;
@@ -58,8 +60,6 @@ feature of this specification.
 ;
 
 { $version , $transfers }
-
-
 
 ;
 ; Describes the version of the file.
@@ -93,9 +93,6 @@ $version = "version" : {
   "remarks"      : [ string * ] ?
 
 }
-
-
-
 
 ;
 ; Transfers is an array of transfer objects.
@@ -145,8 +142,6 @@ $transfer = {
 
 }
 
-
-
 ;
 ; An array of objects, each representing a continguous block
 ; of autonomous system numbers.
@@ -162,8 +157,6 @@ $asn_set = [
   } *
 
 ]
-
-
 
 ;
 ; An array of objects, each representing a contiguous block of IPv4
@@ -191,8 +184,6 @@ $ip4_set = [
 
 ]
 
-
-
 ;
 ; An array of objects, each representing a contiguous block of IPv6
 ; addresses.
@@ -219,8 +210,6 @@ $ip6_set = [
 
 ]
 
-
-
 ;
 ; The list of the RIRs.
 ;
@@ -237,6 +226,295 @@ $organization = {
 
   ; 2 letter country code, same as 2.3
   "country_code"            : /[A-Z]{2}/ ?
+}
+```
+
+## JSON Schema
+
+```
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nro.net/rir_xfer_stats.schema.json",
+  "title": "RIR Transfer Log",
+  "description": "Schema for describing transfers of ASNs and IP networks between RIRs",
+  "type": "object",
+  "required": [
+    "version",
+    "transfers"
+  ],
+  "properties": {
+    "version": {
+      "type": "object",
+      "required": [
+        "stats_version",
+        "producer",
+        "UTC_offset",
+        "production_date",
+        "records_interval"
+      ],
+      "properties": {
+        "stats_version": {
+          "const": "4.0"
+        },
+        "producer": {
+          "$ref": "#/$defs/rir_or_nro"
+        },
+        "UTC_offset": {
+          "type": "integer",
+          "minimum": -12,
+          "maximum": 12
+        },
+        "production_date": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "records_interval": {
+          "type": "object",
+          "required": [
+            "start_date",
+            "end_date"
+          ],
+          "properties": {
+            "start_date": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "end_date": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        },
+        "remarks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "transfers": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/transfer"
+      }
+    }
+  },
+  "$defs": {
+    "rir": {
+      "enum": [
+        "AFRINIC",
+        "APNIC",
+        "ARIN",
+        "LACNIC",
+        "RIPE NCC"
+      ]
+    },
+    "rir_or_nro": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/rir"
+        },
+        {
+          "const": "NRO"
+        }
+      ]
+    },
+    "organization": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "country_code": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$"
+        }
+      }
+    },
+    "asn_set": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "start",
+          "end"
+        ],
+        "properties": {
+          "start": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "end": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      }
+    },
+    "ip4_set": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "start_address",
+          "end_address"
+        ],
+        "properties": {
+          "start_address": {
+            "type": "string",
+            "format": "ipv4"
+          },
+          "end_address": {
+            "type": "string",
+            "format": "ipv4"
+          },
+          "cidrs": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": [
+                "prefix",
+                "length"
+              ],
+              "properties": {
+                "prefix": {
+                  "type": "string",
+                  "format": "ipv4"
+                },
+                "length": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 32
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "ip6_set": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "start_address",
+          "end_address"
+        ],
+        "properties": {
+          "start_address": {
+            "type": "string",
+            "format": "ipv6"
+          },
+          "end_address": {
+            "type": "string",
+            "format": "ipv6"
+          },
+          "cidrs": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": [
+                "prefix",
+                "length"
+              ],
+              "properties": {
+                "prefix": {
+                  "type": "string",
+                  "format": "ipv6"
+                },
+                "length": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 128
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "transfer": {
+      "type": "object",
+      "required": [
+        "source_rir",
+        "recipient_rir",
+        "type"
+      ],
+      "properties": {
+        "asns": {
+          "type": "object",
+          "required": [
+            "transfer_set"
+          ],
+          "properties": {
+            "original_set": {
+              "$ref": "#/$defs/asn_set"
+            },
+            "transfer_set": {
+              "$ref": "#/$defs/asn_set"
+            }
+          }
+        },
+        "ip4nets": {
+          "type": "object",
+          "required": [
+            "transfer_set"
+          ],
+          "properties": {
+            "original_set": {
+              "$ref": "#/$defs/ip4_set"
+            },
+            "transfer_set": {
+              "$ref": "#/$defs/ip4_set"
+            }
+          }
+        },
+        "ip6nets": {
+          "type": "object",
+          "required": [
+            "transfer_set"
+          ],
+          "properties": {
+            "original_set": {
+              "$ref": "#/$defs/ip6_set"
+            },
+            "transfer_set": {
+              "$ref": "#/$defs/ip6_set"
+            }
+          }
+        },
+        "source_organization": {
+          "$ref": "#/$defs/organization"
+        },
+        "recipient_organization": {
+          "$ref": "#/$defs/organization"
+        },
+        "transfer_date": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "source_registration_date": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "source_rir": {
+          "$ref": "#/$defs/rir"
+        },
+        "recipient_rir": {
+          "$ref": "#/$defs/rir"
+        },
+        "type": {
+          "enum": [
+            "MERGER_ACQUISITION",
+            "RESOURCE_TRANSFER"
+          ]
+        }
+      }
+    }
+  }
 }
 ```
 
@@ -296,95 +574,114 @@ Both "source_organization" and "recipient_organization" objects can contain the 
 
 Each transfer object can contain only one of the "asns", "ip4nets", or "ip6nets" objects.
 
-## Example
+# Example
 
 ```
 {
-  "transfers" : [ {
-    "asns" : {
-      "original_set" : [ {
-        "start" : 3943,
-        "end" : 3943
-      } ],
-      "transfer_set" : [ {
-        "start" : 3943,
-        "end" : 3943
-      } ]
+  "transfers": [
+    {
+      "asns": {
+        "original_set": [
+          {
+            "start": 3943,
+            "end": 3943
+          }
+        ],
+        "transfer_set": [
+          {
+            "start": 3943,
+            "end": 3943
+          }
+        ]
+      },
+      "recipient_organization": {
+        "name": "Cisco Systems, Inc.",
+        "country_code": "US"
+      },
+      "recipient_rir": "ARIN",
+      "source_organization": {
+        "name": "David Meyer/University of Oregon",
+        "country_code": "US"
+      },
+      "source_registration_date": "2001-05-18T04:00:00Z",
+      "source_rir": "ARIN",
+      "transfer_date": "2012-08-06T17:46:00Z",
+      "type": "RESOURCE_TRANSFER"
     },
-    "recipient_organization" : {
-      "name" : "Cisco Systems, Inc.",
-      "country_code" : "US"
+    {
+      "ip6nets": {
+        "original_set": [
+          {
+            "start_address": "2620:001F:8000:0000:0000:0000:0000:0000",
+            "end_address": "2620:001F:800F:FFFF:FFFF:FFFF:FFFF:FFFF"
+          }
+        ],
+        "transfer_set": [
+          {
+            "start_address": "2620:001F:8000:0000:0000:0000:0000:0000",
+            "end_address": "2620:001F:8000:FFFF:FFFF:FFFF:FFFF:FFFF"
+          }
+        ]
+      },
+      "recipient_organization": {
+        "name": "CloudfloorDNS",
+        "country_code": "US"
+      },
+      "recipient_rir": "ARIN",
+      "source_organization": {
+        "name": "Cloud Floor Corporation",
+        "country_code": "US"
+      },
+      "source_registration_date": "2011-04-19T20:59:54Z",
+      "source_rir": "ARIN",
+      "transfer_date": "2015-06-22T18:23:56Z",
+      "type": "MERGER_ACQUISITION"
     },
-    "recipient_rir" : "ARIN",
-    "source_organization" : {
-      "name" : "David Meyer/University of Oregon",
-      "country_code" : "US"
+    {
+      "ip4nets": {
+        "original_set": [
+          {
+            "start_address": "162.208.48.0",
+            "end_address": "162.208.51.255"
+          }
+        ],
+        "transfer_set": [
+          {
+            "start_address": "162.208.48.0",
+            "end_address": "162.208.51.255"
+          }
+        ]
+      },
+      "recipient_organization": {
+        "name": "The AES Corporation",
+        "country_code": "US"
+      },
+      "recipient_rir": "ARIN",
+      "source_organization": {
+        "name": "Database By Design LLC",
+        "country_code": "US"
+      },
+      "source_registration_date": "2013-04-01T21:13:31Z",
+      "source_rir": "ARIN",
+      "transfer_date": "2026-04-14T18:59:21Z",
+      "type": "RESOURCE_TRANSFER"
+    }
+  ],
+  "version": {
+    "UTC_offset": -4,
+    "producer": "ARIN",
+    "production_date": "2026-04-15T03:59:11Z",
+    "records_interval": {
+      "start_date": "2009-10-12T18:09:00Z",
+      "end_date": "2026-04-14T18:59:21Z"
     },
-    "source_registration_date" : "2001-05-18T04:00:00Z",
-    "source_rir" : "ARIN",
-    "transfer_date" : "2012-08-06T17:46:00Z",
-    "type" : "RESOURCE_TRANSFER"
-  }, {
-    "ip6nets" : {
-      "original_set" : [ {
-        "start_address" : "2620:001F:8000:0000:0000:0000:0000:0000",
-        "end_address" : "2620:001F:800F:FFFF:FFFF:FFFF:FFFF:FFFF"
-      } ],
-      "transfer_set" : [ {
-        "start_address" : "2620:001F:8000:0000:0000:0000:0000:0000",
-        "end_address" : "2620:001F:8000:FFFF:FFFF:FFFF:FFFF:FFFF"
-      } ]
-    },
-    "recipient_organization" : {
-      "name" : "CloudfloorDNS",
-      "country_code" : "US"
-    },
-    "recipient_rir" : "ARIN",
-    "source_organization" : {
-      "name" : "Cloud Floor Corporation",
-      "country_code" : "US"
-    },
-    "source_registration_date" : "2011-04-19T20:59:54Z",
-    "source_rir" : "ARIN",
-    "transfer_date" : "2015-06-22T18:23:56Z",
-    "type" : "MERGER_ACQUISITION"
-  }, {
-    "ip4nets" : {
-      "original_set" : [ {
-        "start_address" : "162.208.048.000",
-        "end_address" : "162.208.051.255"
-      } ],
-      "transfer_set" : [ {
-        "start_address" : "162.208.048.000",
-        "end_address" : "162.208.051.255"
-      } ]
-    },
-    "recipient_organization" : {
-      "name" : "The AES Corporation",
-      "country_code" : "US"
-    },
-    "recipient_rir" : "ARIN",
-    "source_organization" : {
-      "name" : "Database By Design LLC",
-      "country_code" : "US"
-    },
-    "source_registration_date" : "2013-04-01T21:13:31Z",
-    "source_rir" : "ARIN",
-    "transfer_date" : "2026-04-14T18:59:21Z",
-    "type" : "RESOURCE_TRANSFER"
-  } ],
-  "version" : {
-    "UTC_offset" : -4,
-    "producer" : "ARIN",
-    "production_date" : "2026-04-15T03:59:11Z",
-    "records_interval" : {
-      "start_date" : "2009-10-12T18:09:00Z",
-      "end_date" : "2026-04-14T18:59:21Z"
-    },
-    "remarks" : [ "Copyright (c) 2026 American Registry for Internet Numbers.", "ARIN Terms of Service for this transfers log can be found at https://www.arin.net/tos" ],
-    "stats_version" : "4.0"
+    "remarks": [
+      "Copyright (c) 2026 American Registry for Internet Numbers.",
+      "ARIN Terms of Service for this transfers log can be found at https://www.arin.net/tos"
+    ],
+    "stats_version": "4.0"
   }
-} 
+}
 ```
 
 TODO: Use number resources reserved for example documentation.
