@@ -243,6 +243,7 @@ $organization = {
 The root object contains a "version" object and a "transfers" object.
 
 The "version" object has the following members:
+
 * "stats_version" -- Denotes version 4.0
 * "producer" -- Who produced the file: either one of the RIRs or the NRO
 * "UTC_offset" -- UTC offset of the producer
@@ -253,6 +254,7 @@ The "version" object has the following members:
   data, and production notes.
 
 The "transfers" object is an array of transfer objects. Each transfer object can contain the following members:
+
 * "asns" -- Such an object can contain the following members:
   * "original_set" -- An array of objects, each representing a contiguous block of autonomous system numbers.
   * "transfer_set" -- An array of objects, each representing a contiguous block of autonomous system numbers.
