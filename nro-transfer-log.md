@@ -20,7 +20,7 @@ email = "secretariat@nro.net"
 .# Abstract
 
 This document specifies the format of the JSON file that each RIR produces to publish the number resource transfers
-to/from other RIRs in the given period.
+to/from other RIRs in a given period. This format is described using JSON Schema.
 
 {mainmatter}
 
@@ -35,7 +35,75 @@ feature of this specification.
 
 "..." in examples is used as shorthand for elements defined outside of this document.
 
+# Introduction
+
+This document specifies the format of the JSON file that each RIR produces to publish the number resource transfers
+to/from other RIRs in a given period. This format is described using JSON Schema [@!I-D.dusseault-json-schema].
+
 # Specification
+
+In a transfer log JSON file, the root object contains two objects: a "version" object and a "transfers" object.
+
+The "version" object is the metadata information for the produced file, and contains the following members:
+
+* "stats_version" -- A string representing the version of the specification, with a value of "5.0" for this version.
+* "producer" -- A string identifying an RIR that produced the transfer log file, with possible values of "AFRINIC",
+  "APNIC", "ARIN", "LACNIC", or "RIPE NCC".
+* "UTC_offset" -- An integer representing the UTC offset of the producer, with value from the -12 to 12 range.
+* "production_date" -- A string containing the date and time at which the file was produced, per the date-time ABNF rule
+  from [@!RFC3339], with a UTC offset of +00:00, denoted by a time-offset ABNF rule value of "Z".
+* "records_interval" -- An object representing the period for which the records in the file are covered, with the
+  following members:
+    * "start_date" -- A string containing the start date and time for which the records in the file are covered, per the
+      date-time ABNF rule from [@!RFC3339], with a UTC offset of +00:00, denoted by a time-offset ABNF rule value of "Z".
+    * "end_date" -- A string containing the end date and time for which the records in the file are covered, per the
+      date-time ABNF rule from [@!RFC3339], with a UTC offset of +00:00, denoted by a time-offset ABNF rule value of "Z".
+* "remarks" -- An optional array of strings, where each string contains a semantic distinct prose (in some contexts,
+  these might be called paragraphs). This is where a producer would put copyright notices, terms of service for the
+  data, and production notes.
+
+The "transfers" object is an array of transfer objects. Each transfer object can contain the following members:
+
+* "asns" -- Such an object can contain the following members:
+    * "original_set" -- An array of objects, each representing a contiguous block of autonomous system numbers.
+    * "transfer_set" -- An array of objects, each representing a contiguous block of autonomous system numbers.
+      Both "original_set" and "transfer_set" arrays can contain objects with the following members:
+        * "start" -- Start AS number
+        * "end" -- End AS number
+* "ip4nets" -- Such an object can contain the following members:
+    * "original_set" -- An array of objects, each representing a contiguous block of IPv4 addresses.
+    * "transfer_set" -- An array of objects, each representing a contiguous block of IPv4 addresses.
+      Both "original_set" and "transfer_set" objects can contain the following members:
+        * "start_address" -- Start IP address
+        * "end_address" -- End IP address
+        * "cidrs" -- An optional array for IPv4 CIDR blocks which make up this IP block. Each IPv4 CIDR block object in
+          this array can contain the following members:
+            * "prefix"
+            * "length" -- 0 to 32
+* "ip6nets" -- Such an object can contain the following members:
+    * "original_set" -- An array of objects, each representing a contiguous block of IPv6 addresses.
+    * "transfer_set" -- An array of objects, each representing a contiguous block of IPv6 addresses.
+      Both "original_set" and "transfer_set" objects can contain the following members:
+        * "start_address" -- Start IP address
+        * "end_address" -- End IP address
+        * "cidrs" -- An optional array for IPv6 CIDR blocks which make up this IP block. Each IPv6 CIDR block object in
+          this array can contain the following members:
+            * "prefix"
+            * "length" -- 0 to 128
+* "source_organization" -- An object that represents an organization that is the source of the transfer.
+* "recipient_organization" -- An object that represents an organization that is the recipient of the transfer.
+  Both "source_organization" and "recipient_organization" objects can contain the following members:
+    * "name" -- Name of the organization
+    * "country_code" -- 2-letter country code
+* "transfer_date" -- Date of the transfer
+* "source_registration_date" -- Date of the registration of source resources in the source RIR before the transfer
+* "source_rir" -- Source RIR
+* "recipient_rir" -- Recipient RIR
+* "type" -- The type of transfer
+* "status" -- Status of the transfer
+* "status_date" -- Date when the transfer transitioned to the "status" value
+
+Each transfer object can contain only one of the "asns", "ip4nets", or "ip6nets" objects.
 
 ## JCR
 
@@ -517,62 +585,6 @@ $organization = {
   }
 }
 ```
-
-The root object contains a "version" object and a "transfers" object.
-
-The "version" object has the following members:
-
-* "stats_version" -- Denotes version 4.0
-* "producer" -- Who produced the file: either one of the RIRs or the NRO
-* "UTC_offset" -- UTC offset of the producer
-* "production_date" -- Date and time the file was produced
-* "records_interval" -- The period from which the records of this file are covered
-* "remarks" -- An optional array of strings, where each string contains a semantic distinct prose (in some contexts,
-  these might be called paragraphs). This is where a producer would put copyright notices, terms of service for the
-  data, and production notes.
-
-The "transfers" object is an array of transfer objects. Each transfer object can contain the following members:
-
-* "asns" -- Such an object can contain the following members:
-  * "original_set" -- An array of objects, each representing a contiguous block of autonomous system numbers.
-  * "transfer_set" -- An array of objects, each representing a contiguous block of autonomous system numbers.
-  Both "original_set" and "transfer_set" arrays can contain objects with the following members:
-    * "start" -- Start AS number
-    * "end" -- End AS number
-* "ip4nets" -- Such an object can contain the following members:
-  * "original_set" -- An array of objects, each representing a contiguous block of IPv4 addresses.
-  * "transfer_set" -- An array of objects, each representing a contiguous block of IPv4 addresses.
-    Both "original_set" and "transfer_set" objects can contain the following members:
-      * "start_address" -- Start IP address
-      * "end_address" -- End IP address
-      * "cidrs" -- An optional array for IPv4 CIDR blocks which make up this IP block. Each IPv4 CIDR block object in
-        this array can contain the following members:
-        * "prefix"
-        * "length" -- 0 to 32
-* "ip6nets" -- Such an object can contain the following members:
-  * "original_set" -- An array of objects, each representing a contiguous block of IPv6 addresses.
-  * "transfer_set" -- An array of objects, each representing a contiguous block of IPv6 addresses.
-    Both "original_set" and "transfer_set" objects can contain the following members:
-      * "start_address" -- Start IP address
-      * "end_address" -- End IP address
-      * "cidrs" -- An optional array for IPv6 CIDR blocks which make up this IP block. Each IPv6 CIDR block object in
-        this array can contain the following members:
-          * "prefix"
-          * "length" -- 0 to 128
-* "source_organization" -- An object that represents an organization that is the source of the transfer.
-* "recipient_organization" -- An object that represents an organization that is the recipient of the transfer.
-Both "source_organization" and "recipient_organization" objects can contain the following members:
-  * "name" -- Name of the organization
-  * "country_code" -- 2-letter country code
-* "transfer_date" -- Date of the transfer
-* "source_registration_date" -- Date of the registration of source resources in the source RIR before the transfer
-* "source_rir" -- Source RIR
-* "recipient_rir" -- Recipient RIR
-* "type" -- The type of transfer
-* "status" -- Status of the transfer
-* "status_date" -- Date when the transfer transitioned to the "status" value
-
-Each transfer object can contain only one of the "asns", "ip4nets", or "ip6nets" objects.
 
 # Example
 
