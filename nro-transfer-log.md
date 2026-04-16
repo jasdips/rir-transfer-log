@@ -40,7 +40,7 @@ feature of this specification.
 This document specifies the format of the JSON file that each RIR produces to publish the number resource transfers
 to/from other RIRs in a given period. This format is described using JSON Schema [@!I-D.dusseault-json-schema].
 
-# Specification
+# Format
 
 In a transfer log JSON file, the root object contains two objects: a "version" object and a "transfers" object.
 
@@ -55,9 +55,11 @@ The "version" object is the metadata information for the produced file, and cont
 * "records_interval" -- An object representing the period for which the records in the file are covered, with the
   following members:
     * "start_date" -- A string containing the start date and time for which the records in the file are covered, per the
-      date-time ABNF rule from [@!RFC3339], with a UTC offset of +00:00, denoted by a time-offset ABNF rule value of "Z".
+      date-time ABNF rule from [@!RFC3339], with a UTC offset of +00:00, denoted by a time-offset ABNF rule value of
+      "Z".
     * "end_date" -- A string containing the end date and time for which the records in the file are covered, per the
-      date-time ABNF rule from [@!RFC3339], with a UTC offset of +00:00, denoted by a time-offset ABNF rule value of "Z".
+      date-time ABNF rule from [@!RFC3339], with a UTC offset of +00:00, denoted by a time-offset ABNF rule value of
+      "Z".
 * "remarks" -- An optional array of strings, where each string contains a semantic distinct prose (in some contexts,
   these might be called paragraphs). This is where a producer would put copyright notices, terms of service for the
   data, and production notes.
@@ -65,13 +67,13 @@ The "version" object is the metadata information for the produced file, and cont
 The "transfers" object is an array of transfer objects. Each transfer object can contain the following members:
 
 * "asns" -- Such an object can contain the following members:
-    * "original_set" -- An array of objects, each representing a contiguous block of autonomous system numbers.
+    * "original_set" -- An optional array of objects, each representing a contiguous block of autonomous system numbers.
     * "transfer_set" -- An array of objects, each representing a contiguous block of autonomous system numbers.
       Both "original_set" and "transfer_set" arrays can contain objects with the following members:
         * "start" -- An unsigned 32-bit integer representing the starting AS number.
         * "end" -- An unsigned 32-bit integer representing the ending AS number.
 * "ip4nets" -- Such an object can contain the following members:
-    * "original_set" -- An array of objects, each representing a contiguous block of IPv4 addresses.
+    * "original_set" -- An optional array of objects, each representing a contiguous block of IPv4 addresses.
     * "transfer_set" -- An array of objects, each representing a contiguous block of IPv4 addresses.
       Both "original_set" and "transfer_set" objects can contain the following members:
         * "start_address" -- A string representing the starting IPv4 address.
@@ -81,7 +83,7 @@ The "transfers" object is an array of transfer objects. Each transfer object can
             * "prefix" -- A string representing the IPv4 CIDR prefix.
             * "length" -- An integer representing the IPv4 CIDR length, with value from the 0 to 32 range.
 * "ip6nets" -- Such an object can contain the following members:
-    * "original_set" -- An array of objects, each representing a contiguous block of IPv6 addresses.
+    * "original_set" -- An optional array of objects, each representing a contiguous block of IPv6 addresses.
     * "transfer_set" -- An array of objects, each representing a contiguous block of IPv6 addresses.
       Both "original_set" and "transfer_set" objects can contain the following members:
         * "start_address" -- A string representing the starting IPv6 address.
@@ -93,13 +95,13 @@ The "transfers" object is an array of transfer objects. Each transfer object can
 * "source_organization" -- An object representing an organization that is the source of the transfer.
 * "recipient_organization" -- An object representing an organization that is the recipient of the transfer.
   Both "source_organization" and "recipient_organization" objects can contain the following members:
-    * "name" -- A string representing the name of the organization.
-    * "country_code" -- A string representing the 2-letter country code of the organization.
-* "transfer_date" -- A string containing the date and time of the transfer, per the date-time ABNF rule
+    * "name" -- An optional string representing the name of the organization.
+    * "country_code" -- An optional string representing the 2-letter country code of the organization.
+* "transfer_date" -- An optional string containing the date and time of the transfer, per the date-time ABNF rule
   from [@!RFC3339], with a UTC offset of +00:00, denoted by a time-offset ABNF rule value of "Z".
-* "source_registration_date" -- A string containing the date and time of the registration of source resources in the
-  source RIR, per the date-time ABNF rule from [@!RFC3339], with a UTC offset of +00:00, denoted by a time-offset ABNF
-  rule value of "Z".
+* "source_registration_date" -- A optional string containing the date and time of the registration of source resources
+  in the source RIR, per the date-time ABNF rule from [@!RFC3339], with a UTC offset of +00:00, denoted by a time-offset
+  ABNF rule value of "Z".
 * "source_rir" -- A string identifying the source RIR, with possible values of "AFRINIC", "APNIC", "ARIN", "LACNIC", or
   "RIPE NCC".
 * "recipient_rir" -- A string identifying the recipient RIR, with possible values of "AFRINIC", "APNIC", "ARIN",
@@ -116,8 +118,8 @@ Each transfer object MUST contain only one of the "asns", "ip4nets", or "ip6nets
 
 An "original_set" object describes the set of resources in the registry from which the related "transfer_set" is taken.
 While these sets are often equivalent, the "original_set" can be larger than the "transfer_set". There are transfers in
-which the "original_set" is unknown, such as a transfer to an RIR from another RIR. That is, the receiving RIR may not
-have knowledge of the "original_set" in the registry of the source RIR.
+which the "original_set" is unknown: the receiving RIR may not have knowledge of the "original_set" in the registry of
+the source RIR.
 
 The "source_rir" and "recipient_rir" values MUST be different.
 
@@ -129,7 +131,7 @@ The successful path for a transfer would be:
 * "sourceInitialized" -> "recipientAccepted" -> "sourceFinalized"
 
 When the source RIR initiates a transfer and the recipient RIR accepts it, the resource may be held in the inventory of
-both the RIRs. Once the source RIR issues "sourceFinalized", the resource must no longer be in its inventory.
+both the RIRs. Once the source RIR issues "sourceFinalized", the resource MUST no longer be in its inventory.
 
 The unsuccessful paths for a transfer would be:
 
@@ -143,206 +145,16 @@ When the resource is in dispute between two RIRs, the transfer path would be:
 In such a case, there would be no further state change until the matter is resolved. The resource would be held in the
 inventory of both the RIRs.
 
-## JCR
+# JSON Schema
 
-```
-;
-; RIR Transfer Log
-;
-; This is a ruleset for describing the transfers of Autonomous System
-; Numbers and IP address networks transacted through Regional Internet
-; Registries (RIRs).
-;
-; This ruleset conforms to JSON Content Rules, defined here:
-; https://tools.ietf.org/html/draft-newton-json-content-rules-07
-;
-
-# jcr-version 0.7
-# ruleset-id rir_xfer_stats
-
-;
-; The root of this JSON is a JSON object containing
-; version information followed by the transfer information.
-;
-
-{ $version , $transfers }
-
-;
-; Describes the version of the file.
-; This object is a member of the top level object.
-;
-
-$version = "version" : {
-
-  ; Denotes version 4.0
-  "stats_version"    : "4.0" ,     
-
-  ; Who produced the file: either one of the RIRs or the NRO
-  "producer"         : ( $rir | "NRO" ) ,
-
-  ; UTC offset of the producer.
-  "UTC_offset"       : -12..12 ,
-
-  ; Date and time the file was produced
-  "production_date"  : datetime ,
-
-  ; The period from which the records of this file are covered.
-  "records_interval" : { 
-    "start_date" : datetime , 
-    "end_date"   : datetime 
-  } ,
-
-  ; An optional array of strings, where each string contains a semantic distinct
-  ; prose (in some contexts, these might be called paragraphs).
-  ; This is where a producer would put copyright notices, terms of
-  ; service for the data, and production notes.
-  "remarks"      : [ string * ] ?
-
-}
-
-;
-; Transfers is an array of transfer objects.
-;
-
-$transfers = "transfers" : [ $transfer * ]
-
-$transfer = {
-
-  ; The original_set describes the set of resources in the registry from which
-  ; the transfer_set is taken. While these sets are often equivalent, the
-  ; original_set can be larger than the transfer_set. There are transfers in
-  ; which the original_set is unknown, such as transfer to an RIR from another
-  ; RIR. That is, the receiving RIR may not have have knowledge of the original_set
-  ; in the registry of the source RIR.
-
-  "asns" : {
-    "original_set" : $asn_set ? ,
-    "transfer_set" : $asn_set
-  } ?,
-
-  "ip4nets" : {
-    "original_set" : $ip4_set ? ,
-    "transfer_set" : $ip4_set
-  } ?,
-
-  "ip6nets" : {
-    "original_set" : $ip6_set ? ,
-    "transfer_set" : $ip6_set
-  } ?,
-
-  "source_organization"    : $organization ? ,
-  "recipient_organization" : $organization ? ,
-
-  ; date of the transfer
-  "transfer_date"            : datetime ? ,
-
-  ; date of the registration of source resources
-  ; in the source RIR before the transfer
-  "source_registration_date" : datetime ? ,
-
-  "source_rir"    : $rir ,
-  "recipient_rir" : $rir ,
-
-  ; The type of transfer.
-  "type" : ( "MERGER_ACQUISITION" | "RESOURCE_TRANSFER" )
-
-}
-
-;
-; An array of objects, each representing a continguous block
-; of autonomous system numbers.
-
-$asn_set = [
-
-  {
-    ; The first autonomous system number in the contiguous block.
-    "start"               : int32 ,
-
-    ; The last autonomous system number in the contiguous block.
-    "end"                 : int32 
-  } *
-
-]
-
-;
-; An array of objects, each representing a contiguous block of IPv4
-; addresses.
-;
-
-$ip4_set = [
-
-  {
-    ; Start IP address
-    "start_address"       : ipv4 ,
-
-    ; End IP address
-    "end_address"         : ipv4 ,
-
-    ; An optional array for IPv4 CIDR blocks which make up this
-    ; IP block
-    "cidrs" : [
-      {
-        "prefix" : ipv4 ,
-        "length" : 0..32
-      } +
-    ] ?
-  } *
-
-]
-
-;
-; An array of objects, each representing a contiguous block of IPv6
-; addresses.
-;
-
-$ip6_set = [
-
-  {
-    ; Start IP address
-    "start_address"       : ipv6 ,
-
-    ; End IP address
-    "end_address"         : ipv6 ,
-
-    ; An optional array for IPv6 CIDR blocks which make up this
-    ; IP block
-    "cidrs" : [
-      {
-        "prefix" : ipv6 ,
-        "length" : 0..128
-      } +
-    ] ?
-  }
-
-]
-
-;
-; The list of the RIRs.
-;
-$rir = ( "AFRINIC" | "APNIC" | "ARIN" | "LACNIC" | "RIPE NCC" )
-
-;
-; Represents an organization that is either the source of the transfer
-; or the recipient of the transfer
-;
-$organization = {
-
-  ; Name of the organization
-  "name"                    : string ? ,
-
-  ; 2 letter country code, same as 2.3
-  "country_code"            : /[A-Z]{2}/ ?
-}
-```
-
-## JSON Schema
+This section formally describes the format of a transfer log JSON file using JSON Schema [@!I-D.dusseault-json-schema].
 
 ```
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://nro.net/rir_xfer_stats.schema.json",
-  "title": "RIR Transfer Log",
-  "description": "Schema for describing transfers of ASNs and IP networks between RIRs",
+  "$id": "https://nro.net/nro_transfer_log.schema.json",
+  "title": "NRO Transfer Log",
+  "description": "Schema for describing transfers of IP addresses and ASNs between RIRs",
   "type": "object",
   "required": [
     "version",
@@ -363,7 +175,7 @@ $organization = {
           "const": "4.0"
         },
         "producer": {
-          "$ref": "#/$defs/rir_or_nro"
+          "$ref": "#/$defs/rir"
         },
         "UTC_offset": {
           "type": "integer",
@@ -414,16 +226,6 @@ $organization = {
         "ARIN",
         "LACNIC",
         "RIPE NCC"
-      ]
-    },
-    "rir_or_nro": {
-      "anyOf": [
-        {
-          "$ref": "#/$defs/rir"
-        },
-        {
-          "const": "NRO"
-        }
       ]
     },
     "organization": {
