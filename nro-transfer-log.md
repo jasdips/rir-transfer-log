@@ -68,42 +68,80 @@ The "transfers" object is an array of transfer objects. Each transfer object can
     * "original_set" -- An array of objects, each representing a contiguous block of autonomous system numbers.
     * "transfer_set" -- An array of objects, each representing a contiguous block of autonomous system numbers.
       Both "original_set" and "transfer_set" arrays can contain objects with the following members:
-        * "start" -- Start AS number
-        * "end" -- End AS number
+        * "start" -- An unsigned 32-bit integer representing the starting AS number.
+        * "end" -- An unsigned 32-bit integer representing the ending AS number.
 * "ip4nets" -- Such an object can contain the following members:
     * "original_set" -- An array of objects, each representing a contiguous block of IPv4 addresses.
     * "transfer_set" -- An array of objects, each representing a contiguous block of IPv4 addresses.
       Both "original_set" and "transfer_set" objects can contain the following members:
-        * "start_address" -- Start IP address
-        * "end_address" -- End IP address
+        * "start_address" -- A string representing the starting IPv4 address.
+        * "end_address" -- A string representing the ending IPv4 address.
         * "cidrs" -- An optional array for IPv4 CIDR blocks which make up this IP block. Each IPv4 CIDR block object in
           this array can contain the following members:
-            * "prefix"
-            * "length" -- 0 to 32
+            * "prefix" -- A string representing the IPv4 CIDR prefix.
+            * "length" -- An integer representing the IPv4 CIDR length, with value from the 0 to 32 range.
 * "ip6nets" -- Such an object can contain the following members:
     * "original_set" -- An array of objects, each representing a contiguous block of IPv6 addresses.
     * "transfer_set" -- An array of objects, each representing a contiguous block of IPv6 addresses.
       Both "original_set" and "transfer_set" objects can contain the following members:
-        * "start_address" -- Start IP address
-        * "end_address" -- End IP address
+        * "start_address" -- A string representing the starting IPv6 address.
+        * "end_address" -- A string representing the ending IPv6 address.
         * "cidrs" -- An optional array for IPv6 CIDR blocks which make up this IP block. Each IPv6 CIDR block object in
           this array can contain the following members:
-            * "prefix"
-            * "length" -- 0 to 128
-* "source_organization" -- An object that represents an organization that is the source of the transfer.
-* "recipient_organization" -- An object that represents an organization that is the recipient of the transfer.
+            * "prefix" -- A string representing the IPv6 CIDR prefix.
+            * "length" -- An integer representing the IPv6 CIDR length, with value from the 0 to 128 range.
+* "source_organization" -- An object representing an organization that is the source of the transfer.
+* "recipient_organization" -- An object representing an organization that is the recipient of the transfer.
   Both "source_organization" and "recipient_organization" objects can contain the following members:
-    * "name" -- Name of the organization
-    * "country_code" -- 2-letter country code
-* "transfer_date" -- Date of the transfer
-* "source_registration_date" -- Date of the registration of source resources in the source RIR before the transfer
-* "source_rir" -- Source RIR
-* "recipient_rir" -- Recipient RIR
-* "type" -- The type of transfer
-* "status" -- Status of the transfer
-* "status_date" -- Date when the transfer transitioned to the "status" value
+    * "name" -- A string representing the name of the organization.
+    * "country_code" -- A string representing the 2-letter country code of the organization.
+* "transfer_date" -- A string containing the date and time of the transfer, per the date-time ABNF rule
+  from [@!RFC3339], with a UTC offset of +00:00, denoted by a time-offset ABNF rule value of "Z".
+* "source_registration_date" -- A string containing the date and time of the registration of source resources in the
+  source RIR, per the date-time ABNF rule from [@!RFC3339], with a UTC offset of +00:00, denoted by a time-offset ABNF
+  rule value of "Z".
+* "source_rir" -- A string identifying the source RIR, with possible values of "AFRINIC", "APNIC", "ARIN", "LACNIC", or
+  "RIPE NCC".
+* "recipient_rir" -- A string identifying the recipient RIR, with possible values of "AFRINIC", "APNIC", "ARIN",
+  "LACNIC", or "RIPE NCC".
+* "type" -- A string representing the type of transfer, with possible values of "MERGER_ACQUISITION" or
+  "RESOURCE_TRANSFER".
+* "status" -- A string representing the status of transfer, with possible values of "sourceInitialized",
+  "sourceCancelled", or "sourceFinalized" for the source RIR, and "recipientAccepted" or "recipientCancelled" for the
+  recipient RIR.
+* "status_date" -- A string containing the date and time when the transfer transitioned to the "status" value, per the
+  date-time ABNF rule from [@!RFC3339], with a UTC offset of +00:00, denoted by a time-offset ABNF rule value of "Z".
 
-Each transfer object can contain only one of the "asns", "ip4nets", or "ip6nets" objects.
+Each transfer object MUST contain only one of the "asns", "ip4nets", or "ip6nets" objects.
+
+An "original_set" object describes the set of resources in the registry from which the related "transfer_set" is taken.
+While these sets are often equivalent, the "original_set" can be larger than the "transfer_set". There are transfers in
+which the "original_set" is unknown, such as a transfer to an RIR from another RIR. That is, the receiving RIR may not
+have knowledge of the "original_set" in the registry of the source RIR.
+
+The "source_rir" and "recipient_rir" values MUST be different.
+
+The "status" and "status_date" fields provide clarity for resources in flight between two RIRs, resources when a
+transfer is cancelled, and a way to detect disputes in resources that are held by both the RIRs.
+
+The successful path for a transfer would be:
+
+* "sourceInitialized" -> "recipientAccepted" -> "sourceFinalized"
+
+When the source RIR initiates a transfer and the recipient RIR accepts it, the resource may be held in the inventory of
+both the RIRs. Once the source RIR issues "sourceFinalized", the resource must no longer be in its inventory.
+
+The unsuccessful paths for a transfer would be:
+
+* "sourceInitialized" -> "sourceCancelled"
+* "sourceInitialized" -> "recipientAccepted" -> "recipientCancelled"
+
+When the resource is in dispute between two RIRs, the transfer path would be:
+
+* "sourceInitialized" -> "recipientAccepted"
+
+In such a case, there would be no further state change until the matter is resolved. The resource would be held in the
+inventory of both the RIRs.
 
 ## JCR
 
