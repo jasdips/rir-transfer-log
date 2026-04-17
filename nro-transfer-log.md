@@ -458,8 +458,8 @@ The following JSON Schema formally defines the format of a transfer log JSON doc
       "end_date": "2026-04-14T18:59:21Z"
     },
     "remarks": [
-      "Copyright (c) 2026 American Registry for Internet Numbers.",
-      "ARIN Terms of Service for this transfers log can be found at https://www.arin.net/tos"
+      "Copyright (c) 2026 Example Registry",
+      "Example Registry's Terms of Service for this transfer log can be found at https://registry.example/tos"
     ],
     "stats_version": "5.0"
   },
