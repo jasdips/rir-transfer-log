@@ -1,0 +1,840 @@
+
+
+
+
+Network Working Group                       Number Resource Organization
+Internet-Draft                                             17 April 2026
+Intended status: Standards Track                                        
+Expires: 19 October 2026
+
+
+             Regional Internet Registry (RIR) Transfer Log
+                          rir-transfer-log-00
+
+Abstract
+
+   This document specifies version 5.0 of the JSON document called
+   Transfer Log that each Regional Internet Registry (RIR) produces to
+   publish intra-RIR and inter-RIR transfers of IP addresses and
+   Autonomous System Numbers (ASNs) for a given period.  It utilizes
+   JSON Schema to formally define the format.
+
+Status of This Memo
+
+   This Internet-Draft is submitted in full conformance with the
+   provisions of BCP 78 and BCP 79.
+
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF).  Note that other groups may also distribute
+   working documents as Internet-Drafts.  The list of current Internet-
+   Drafts is at https://datatracker.ietf.org/drafts/current/.
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+   This Internet-Draft will expire on 19 October 2026.
+
+Copyright Notice
+
+   Copyright (c) 2026 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents (https://trustee.ietf.org/
+   license-info) in effect on the date of publication of this document.
+   Please review these documents carefully, as they describe your rights
+   and restrictions with respect to this document.  Code Components
+   extracted from this document must include Revised BSD License text as
+   described in Section 4.e of the Trust Legal Provisions and are
+   provided without warranty as described in the Revised BSD License.
+
+
+
+
+                         Expires 19 October 2026                [Page 1]
+
+Internet-Draft              RIR Transfer Log                  April 2026
+
+
+Table of Contents
+
+   1.  Requirements Language . . . . . . . . . . . . . . . . . . . .   2
+   2.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
+   3.  Format  . . . . . . . . . . . . . . . . . . . . . . . . . . .   3
+   4.  JSON Schema . . . . . . . . . . . . . . . . . . . . . . . . .   6
+   5.  Example . . . . . . . . . . . . . . . . . . . . . . . . . . .  12
+   6.  References  . . . . . . . . . . . . . . . . . . . . . . . . .  15
+     6.1.  Normative References  . . . . . . . . . . . . . . . . . .  15
+     6.2.  Informative References  . . . . . . . . . . . . . . . . .  15
+   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  15
+
+1.  Requirements Language
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+   "OPTIONAL" in this document are to be interpreted as described in BCP
+   14 [RFC2119] [RFC8174] when, and only when, they appear in all
+   capitals, as shown here.
+
+   Indentation and whitespace in examples are provided only to
+   illustrate element relationships, and are not a required feature of
+   this specification.
+
+   "..." in examples is used as shorthand for elements defined outside
+   of this document.
+
+2.  Introduction
+
+   This document specifies version 5.0 of the JSON document called
+   Transfer Log that each Regional Internet Registry (RIR) produces to
+   publish intra-RIR and inter-RIR transfers of IP addresses and
+   Autonomous System Numbers (ASNs) for a given period.  It utilizes
+   JSON Schema [I-D.dusseault-json-schema] to formally define the
+   format.
+
+   Salient changes from version 4.0 of Transfer Log [TRANSFER-LOG-4]
+   are:
+
+   *  New "status" and "status_date" fields to track inter-RIR
+      transfers.
+   *  The format is now defined using JSON Schema instead of JSON
+      Content Rules (JCR) since the IETF has decided to standardize the
+      former and not the latter.
+
+
+
+
+
+
+
+                         Expires 19 October 2026                [Page 2]
+
+Internet-Draft              RIR Transfer Log                  April 2026
+
+
+3.  Format
+
+   In a transfer log JSON document, the root object MUST contain two
+   objects: a "version" object and a "transfers" object.
+
+   The "version" object is the metadata information for the produced
+   document, and has the following members:
+
+   *  "stats_version" -- (REQUIRED) A string representing the version of
+      the transfer log, with a value of "5.0" for this version.
+   *  "producer" -- (REQUIRED) A string identifying the organization,
+      either one of the RIRs or the NRO, that produced the transfer log
+      document, with possible values of "AFRINIC", "APNIC", "ARIN",
+      "LACNIC", "RIPE NCC", or "NRO".
+   *  "UTC_offset" -- (REQUIRED) An integer representing the UTC offset
+      of the producer, with value from -12 to 12.
+   *  "production_date" -- (REQUIRED) A string containing the date and
+      time at which the document was produced, per the date-time ABNF
+      rule from [RFC3339], with a UTC offset of +00:00, denoted by a
+      time-offset ABNF rule value of "Z".
+   *  "records_interval" -- (REQUIRED) An object representing the period
+      for which the records in the document are covered, with the
+      following members:
+      -  "start_date" -- (REQUIRED) A string representing the start date
+         and time for which the records in the document are covered, per
+         the date-time ABNF rule from [RFC3339], with a UTC offset of
+         +00:00, denoted by a time-offset ABNF rule value of "Z".
+      -  "end_date" -- (REQUIRED) A string representing the end date and
+         time for which the records in the document are covered, per the
+         date-time ABNF rule from [RFC3339], with a UTC offset of
+         +00:00, denoted by a time-offset ABNF rule value of "Z".
+   *  "remarks" -- (OPTIONAL) An array of strings, where each string
+      contains a semantically distinct prose (in some contexts, these
+      might be called paragraphs).  This is where the producer would put
+      copyright notices, terms of service for the data, and production
+      notes.
+
+   The "transfers" object is an array of transfer objects.  Each
+   transfer object has the following members:
+
+   *  "asns" -- (OPTIONAL) Such an object has the following members:
+      -  "original_set" -- (OPTIONAL) An array of objects, each
+         representing a contiguous block of ASNs.
+      -  "transfer_set" -- (REQUIRED) An array of objects, each
+         representing a contiguous block of ASNs.  Both "original_set"
+         and "transfer_set" arrays contain objects with the following
+         members:
+
+
+
+
+                         Expires 19 October 2026                [Page 3]
+
+Internet-Draft              RIR Transfer Log                  April 2026
+
+
+         o  "start" -- (REQUIRED) An unsigned 32-bit integer
+            representing the start ASN.
+         o  "end" -- (REQUIRED) An unsigned 32-bit integer representing
+            the end ASN.
+   *  "ip4nets" -- (OPTIONAL) Such an object has the following members:
+      -  "original_set" -- (OPTIONAL) An array of objects, each
+         representing a contiguous block of IPv4 addresses.
+      -  "transfer_set" -- (REQUIRED) An array of objects, each
+         representing a contiguous block of IPv4 addresses.  Both
+         "original_set" and "transfer_set" objects contain objects with
+         the following members:
+         o  "start_address" -- (REQUIRED) A string representing the
+            start IPv4 address.
+         o  "end_address" -- (REQUIRED) A string representing the end
+            IPv4 address.
+         o  "cidrs" -- (OPTIONAL) An array for IPv4 CIDR blocks which
+            make up this IP block.  Each IPv4 CIDR block object in this
+            array has the following members:
+            +  "prefix" -- (REQUIRED) A string representing the IPv4
+               CIDR prefix.
+            +  "length" -- (REQUIRED) An integer representing the IPv4
+               CIDR length, with value from 0 to 32.
+   *  "ip6nets" -- (OPTIONAL) Such an object has the following members:
+      -  "original_set" -- (OPTIONAL) An array of objects, each
+         representing a contiguous block of IPv6 addresses.
+      -  "transfer_set" -- (REQUIRED) An array of objects, each
+         representing a contiguous block of IPv6 addresses.  Both
+         "original_set" and "transfer_set" objects contain objects with
+         the following members:
+         o  "start_address" -- (REQUIRED) A string representing the
+            start IPv6 address.
+         o  "end_address" -- (REQUIRED) A string representing the end
+            IPv6 address.
+         o  "cidrs" -- (OPTIONAL) An array for IPv6 CIDR blocks which
+            make up this IP block.  Each IPv6 CIDR block object in this
+            array has the following members:
+            +  "prefix" -- (REQUIRED) A string representing the IPv6
+               CIDR prefix.
+            +  "length" -- (REQUIRED) An integer representing the IPv6
+               CIDR length, with value from 0 to 128.
+   *  "source_organization" -- (REQUIRED) An object representing an
+      organization that is the source of the transfer.
+   *  "recipient_organization" -- (REQUIRED) An object representing an
+      organization that is the recipient of the transfer.  Both
+      "source_organization" and "recipient_organization" objects have
+      the following members:
+      -  "name" -- (OPTIONAL) A string representing the name of the
+         organization.
+
+
+
+                         Expires 19 October 2026                [Page 4]
+
+Internet-Draft              RIR Transfer Log                  April 2026
+
+
+      -  "country_code" -- (OPTIONAL) A string representing the 2-letter
+         country code of the organization.
+   *  "transfer_date" -- (OPTIONAL) A string representing the date and
+      time of the transfer, per the date-time ABNF rule from [RFC3339],
+      with a UTC offset of +00:00, denoted by a time-offset ABNF rule
+      value of "Z".
+   *  "source_registration_date" -- (OPTIONAL) A string representing the
+      date and time of the registration of source resources in the
+      source RIR, per the date-time ABNF rule from [RFC3339], with a UTC
+      offset of +00:00, denoted by a time-offset ABNF rule value of "Z".
+   *  "source_rir" -- (REQUIRED) A string identifying the source RIR,
+      with possible values of "AFRINIC", "APNIC", "ARIN", "LACNIC", or
+      "RIPE NCC".
+   *  "recipient_rir" -- (REQUIRED) A string identifying the recipient
+      RIR, with possible values of "AFRINIC", "APNIC", "ARIN", "LACNIC",
+      or "RIPE NCC".
+   *  "type" -- (REQUIRED) A string representing the type of transfer,
+      with possible values of "MERGER_ACQUISITION" or
+      "RESOURCE_TRANSFER".
+   *  "status" -- (OPTIONAL) A string representing the status of an
+      inter-RIR transfer, with possible values of "sourceInitialized",
+      "sourceCancelled", or "sourceFinalized" for the source RIR, and
+      "recipientAccepted" or "recipientCancelled" for the recipient RIR.
+   *  "status_date" -- (OPTIONAL) A string representing the date and
+      time when an inter-RIR transfer transitioned to the "status"
+      value, per the date-time ABNF rule from [RFC3339], with a UTC
+      offset of +00:00, denoted by a time-offset ABNF rule value of "Z".
+
+   Each transfer object MUST contain only one of the "asns", "ip4nets",
+   or "ip6nets" objects.
+
+   An "original_set" object describes the set of resources in the
+   registry from which the related "transfer_set" is taken.  While these
+   sets are often equivalent, the "original_set" can be larger than the
+   "transfer_set".  There are transfers in which the "original_set" is
+   unknown: the recipient RIR may not have knowledge of the
+   "original_set" in the registry of the source RIR.
+
+   The "source_rir" and "recipient_rir" values MUST be identical for an
+   intra-RIR transfer and distinct for an inter-RIR transfer.
+
+   The "status" and "status_date" fields are REQUIRED for an inter-RIR
+   transfer.  They provide clarity for resources in flight between two
+   RIRs, resources when a transfer is cancelled, and a way to detect
+   disputes in resources that are held by both the RIRs.
+
+   The "status" and "status_date" fields MUST NOT be set for an intra-
+   RIR transfer.
+
+
+
+                         Expires 19 October 2026                [Page 5]
+
+Internet-Draft              RIR Transfer Log                  April 2026
+
+
+   The successful path for an inter-RIR transfer would be:
+
+   *  sourceInitialized -> recipientAccepted -> sourceFinalized
+
+   When the source RIR initiates a transfer and the recipient RIR
+   accepts it, the resource may be held in the inventory of both the
+   RIRs.  Once the source RIR issues "sourceFinalized", the resource
+   MUST no longer be in its inventory.
+
+   The unsuccessful paths for an inter-RIR transfer would be:
+
+   *  sourceInitialized -> sourceCancelled
+   *  sourceInitialized -> recipientAccepted -> recipientCancelled
+
+   When the resource is in dispute between two RIRs, the transfer path
+   would be:
+
+   *  sourceInitialized -> recipientAccepted
+
+   In such a case, there would be no further status change until the
+   matter is resolved.  The resource would be held in the inventory of
+   both the RIRs.
+
+      |  Is the "NRO" value for the "producer" field needed any longer?
+
+4.  JSON Schema
+
+   The following JSON Schema formally defines the format of a transfer
+   log JSON document:
+
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nro.net/rir_transfer_log.schema.json",
+  "title": "RIR Transfer Log",
+  "description": "Schema to describe intra-RIR and inter-RIR transfers of IP addresses and ASNs",
+  "type": "object",
+  "required": [
+    "version",
+    "transfers"
+  ],
+  "properties": {
+    "version": {
+      "type": "object",
+      "required": [
+        "stats_version",
+        "producer",
+        "UTC_offset",
+        "production_date",
+
+
+
+                         Expires 19 October 2026                [Page 6]
+
+Internet-Draft              RIR Transfer Log                  April 2026
+
+
+        "records_interval"
+      ],
+      "properties": {
+        "stats_version": {
+          "const": "5.0"
+        },
+        "producer": {
+          "$ref": "#/$defs/rir_or_nro"
+        },
+        "UTC_offset": {
+          "type": "integer",
+          "minimum": -12,
+          "maximum": 12
+        },
+        "production_date": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "records_interval": {
+          "type": "object",
+          "required": [
+            "start_date",
+            "end_date"
+          ],
+          "properties": {
+            "start_date": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "end_date": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        },
+        "remarks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "transfers": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/transfer"
+      }
+
+
+
+                         Expires 19 October 2026                [Page 7]
+
+Internet-Draft              RIR Transfer Log                  April 2026
+
+
+    }
+  },
+  "$defs": {
+    "rir": {
+      "enum": [
+        "AFRINIC",
+        "APNIC",
+        "ARIN",
+        "LACNIC",
+        "RIPE NCC"
+      ]
+    },
+    "rir_or_nro": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/rir"
+        },
+        {
+          "const": "NRO"
+        }
+      ]
+    },
+    "organization": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "country_code": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$"
+        }
+      }
+    },
+    "asn_set": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "start",
+          "end"
+        ],
+        "properties": {
+          "start": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "end": {
+
+
+
+                         Expires 19 October 2026                [Page 8]
+
+Internet-Draft              RIR Transfer Log                  April 2026
+
+
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      }
+    },
+    "ip4_set": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "start_address",
+          "end_address"
+        ],
+        "properties": {
+          "start_address": {
+            "type": "string",
+            "format": "ipv4"
+          },
+          "end_address": {
+            "type": "string",
+            "format": "ipv4"
+          },
+          "cidrs": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": [
+                "prefix",
+                "length"
+              ],
+              "properties": {
+                "prefix": {
+                  "type": "string",
+                  "format": "ipv4"
+                },
+                "length": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 32
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+
+
+                         Expires 19 October 2026                [Page 9]
+
+Internet-Draft              RIR Transfer Log                  April 2026
+
+
+    "ip6_set": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "start_address",
+          "end_address"
+        ],
+        "properties": {
+          "start_address": {
+            "type": "string",
+            "format": "ipv6"
+          },
+          "end_address": {
+            "type": "string",
+            "format": "ipv6"
+          },
+          "cidrs": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": [
+                "prefix",
+                "length"
+              ],
+              "properties": {
+                "prefix": {
+                  "type": "string",
+                  "format": "ipv6"
+                },
+                "length": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 128
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "transfer": {
+      "type": "object",
+      "required": [
+        "source_rir",
+        "recipient_rir",
+        "type"
+
+
+
+                         Expires 19 October 2026               [Page 10]
+
+Internet-Draft              RIR Transfer Log                  April 2026
+
+
+      ],
+      "properties": {
+        "asns": {
+          "type": "object",
+          "required": [
+            "transfer_set"
+          ],
+          "properties": {
+            "original_set": {
+              "$ref": "#/$defs/asn_set"
+            },
+            "transfer_set": {
+              "$ref": "#/$defs/asn_set"
+            }
+          }
+        },
+        "ip4nets": {
+          "type": "object",
+          "required": [
+            "transfer_set"
+          ],
+          "properties": {
+            "original_set": {
+              "$ref": "#/$defs/ip4_set"
+            },
+            "transfer_set": {
+              "$ref": "#/$defs/ip4_set"
+            }
+          }
+        },
+        "ip6nets": {
+          "type": "object",
+          "required": [
+            "transfer_set"
+          ],
+          "properties": {
+            "original_set": {
+              "$ref": "#/$defs/ip6_set"
+            },
+            "transfer_set": {
+              "$ref": "#/$defs/ip6_set"
+            }
+          }
+        },
+        "source_organization": {
+          "$ref": "#/$defs/organization"
+        },
+        "recipient_organization": {
+
+
+
+                         Expires 19 October 2026               [Page 11]
+
+Internet-Draft              RIR Transfer Log                  April 2026
+
+
+          "$ref": "#/$defs/organization"
+        },
+        "transfer_date": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "source_registration_date": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "source_rir": {
+          "$ref": "#/$defs/rir"
+        },
+        "recipient_rir": {
+          "$ref": "#/$defs/rir"
+        },
+        "type": {
+          "enum": [
+            "MERGER_ACQUISITION",
+            "RESOURCE_TRANSFER"
+          ]
+        }
+      }
+    }
+  }
+}
+
+5.  Example
+
+{
+  "version": {
+    "UTC_offset": -4,
+    "producer": "ARIN",
+    "production_date": "2026-04-15T03:59:11Z",
+    "records_interval": {
+      "start_date": "2009-10-12T18:09:00Z",
+      "end_date": "2026-04-14T18:59:21Z"
+    },
+    "remarks": [
+      "Copyright (c) 2026 Example Registry",
+      "Example Registry's Terms of Service for this transfer log can be found at https://registry.example/tos"
+    ],
+    "stats_version": "5.0"
+  },
+  "transfers": [
+    {
+      "asns": {
+        "original_set": [
+
+
+
+                         Expires 19 October 2026               [Page 12]
+
+Internet-Draft              RIR Transfer Log                  April 2026
+
+
+          {
+            "start": 65536,
+            "end": 65539
+          }
+        ],
+        "transfer_set": [
+          {
+            "start": 65536,
+            "end": 65537
+          }
+        ]
+      },
+      "recipient_organization": {
+        "name": "Example1 Inc.",
+        "country_code": "US"
+      },
+      "recipient_rir": "ARIN",
+      "source_organization": {
+        "name": "Example2 Inc.",
+        "country_code": "AU"
+      },
+      "source_registration_date": "2001-05-18T04:00:00Z",
+      "source_rir": "APNIC",
+      "transfer_date": "2012-08-06T17:46:00Z",
+      "type": "MERGER_ACQUISITION",
+      "status": "recipientAccepted",
+      "status_date": "2012-08-06T17:46:00Z"
+    },
+    {
+      "ip6nets": {
+        "original_set": [
+          {
+            "start_address": "2001:db8::",
+            "end_address": "2001:db8:0:ffff:ffff:ffff:ffff:ffff"
+          }
+        ],
+        "transfer_set": [
+          {
+            "start_address": "2001:db8::",
+            "end_address": "2001:db8:0:ffff:ffff:ffff:ffff:ffff"
+          }
+        ]
+      },
+      "recipient_organization": {
+        "name": "Example3 Inc.",
+        "country_code": "US"
+      },
+      "recipient_rir": "ARIN",
+
+
+
+                         Expires 19 October 2026               [Page 13]
+
+Internet-Draft              RIR Transfer Log                  April 2026
+
+
+      "source_organization": {
+        "name": "Example4 Inc.",
+        "country_code": "US"
+      },
+      "source_registration_date": "2011-04-19T20:59:54Z",
+      "source_rir": "ARIN",
+      "transfer_date": "2015-06-22T18:23:56Z",
+      "type": "MERGER_ACQUISITION"
+    },
+    {
+      "ip4nets": {
+        "original_set": [
+          {
+            "start_address": "192.0.2.0",
+            "end_address": "192.0.2.255"
+          }
+        ],
+        "transfer_set": [
+          {
+            "start_address": "192.0.2.0",
+            "end_address": "192.0.2.127"
+          }
+        ]
+      },
+      "recipient_organization": {
+        "name": "Example5 Inc.",
+        "country_code": "NL"
+      },
+      "recipient_rir": "RIPE NCC",
+      "source_organization": {
+        "name": "Example6 Inc.",
+        "country_code": "CA"
+      },
+      "source_registration_date": "2013-04-01T21:13:31Z",
+      "source_rir": "ARIN",
+      "type": "RESOURCE_TRANSFER",
+      "status": "sourceCancelled",
+      "status_date": "2026-04-14T18:59:21Z"
+    }
+  ]
+}
+
+   In this example:
+
+   *  The "asns" object illustrates a successful inter-RIR transfer for
+      the recipient RIR if the source RIR has the "sourceFinalized"
+      status on its end.
+   *  The "ip6nets" object illustrates a successful intra-RIR transfer.
+
+
+
+                         Expires 19 October 2026               [Page 14]
+
+Internet-Draft              RIR Transfer Log                  April 2026
+
+
+   *  The "ip4nets" object illustrates an unsuccessful inter-RIR
+      transfer because of the "sourceCancelled"" status for the source
+      RIR.
+
+   This example validates against the JSON Schema in Section 4, per
+   [JSON-SCHEMA-VALIDATOR].
+
+6.  References
+
+6.1.  Normative References
+
+   [I-D.dusseault-json-schema]
+              Dusseault, L. M., Wright, A., and H. Andrews, "JSON
+              Schema", Work in Progress, Internet-Draft, draft-
+              dusseault-json-schema-00, 26 February 2026,
+              <https://datatracker.ietf.org/doc/html/draft-dusseault-
+              json-schema-00>.
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119,
+              DOI 10.17487/RFC2119, March 1997,
+              <https://www.rfc-editor.org/info/rfc2119>.
+
+   [RFC3339]  Klyne, G. and C. Newman, "Date and Time on the Internet:
+              Timestamps", RFC 3339, DOI 10.17487/RFC3339, July 2002,
+              <https://www.rfc-editor.org/info/rfc3339>.
+
+   [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
+              2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
+              May 2017, <https://www.rfc-editor.org/info/rfc8174>.
+
+   [TRANSFER-LOG-4]
+              NRO, "Transfer Log 4.0", <https://gitlab.nro.net/ecg/
+              transfer_log/-/blob/master/transfer_log.jcr>.
+
+6.2.  Informative References
+
+   [JSON-SCHEMA-VALIDATOR]
+              Newton-King, J., "JSON Schema Validator",
+              <https://www.jsonschemavalidator.net/>.
+
+Author's Address
+
+   Number Resource Organization
+   Email: secretariat@nro.net
+
+
+
+
+
+
+                         Expires 19 October 2026               [Page 15]
