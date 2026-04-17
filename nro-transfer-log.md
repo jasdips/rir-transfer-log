@@ -181,7 +181,7 @@ The following JSON Schema formally defines the format of a transfer log JSON doc
       ],
       "properties": {
         "stats_version": {
-          "const": "4.0"
+          "const": "5.0"
         },
         "producer": {
           "$ref": "#/$defs/rir_or_nro"
@@ -449,95 +449,6 @@ The following JSON Schema formally defines the format of a transfer log JSON doc
 
 ```
 {
-  "transfers": [
-    {
-      "asns": {
-        "original_set": [
-          {
-            "start": 3943,
-            "end": 3943
-          }
-        ],
-        "transfer_set": [
-          {
-            "start": 3943,
-            "end": 3943
-          }
-        ]
-      },
-      "recipient_organization": {
-        "name": "Cisco Systems, Inc.",
-        "country_code": "US"
-      },
-      "recipient_rir": "ARIN",
-      "source_organization": {
-        "name": "David Meyer/University of Oregon",
-        "country_code": "US"
-      },
-      "source_registration_date": "2001-05-18T04:00:00Z",
-      "source_rir": "ARIN",
-      "transfer_date": "2012-08-06T17:46:00Z",
-      "type": "RESOURCE_TRANSFER"
-    },
-    {
-      "ip6nets": {
-        "original_set": [
-          {
-            "start_address": "2620:001F:8000:0000:0000:0000:0000:0000",
-            "end_address": "2620:001F:800F:FFFF:FFFF:FFFF:FFFF:FFFF"
-          }
-        ],
-        "transfer_set": [
-          {
-            "start_address": "2620:001F:8000:0000:0000:0000:0000:0000",
-            "end_address": "2620:001F:8000:FFFF:FFFF:FFFF:FFFF:FFFF"
-          }
-        ]
-      },
-      "recipient_organization": {
-        "name": "CloudfloorDNS",
-        "country_code": "US"
-      },
-      "recipient_rir": "ARIN",
-      "source_organization": {
-        "name": "Cloud Floor Corporation",
-        "country_code": "US"
-      },
-      "source_registration_date": "2011-04-19T20:59:54Z",
-      "source_rir": "ARIN",
-      "transfer_date": "2015-06-22T18:23:56Z",
-      "type": "MERGER_ACQUISITION"
-    },
-    {
-      "ip4nets": {
-        "original_set": [
-          {
-            "start_address": "162.208.48.0",
-            "end_address": "162.208.51.255"
-          }
-        ],
-        "transfer_set": [
-          {
-            "start_address": "162.208.48.0",
-            "end_address": "162.208.51.255"
-          }
-        ]
-      },
-      "recipient_organization": {
-        "name": "The AES Corporation",
-        "country_code": "US"
-      },
-      "recipient_rir": "ARIN",
-      "source_organization": {
-        "name": "Database By Design LLC",
-        "country_code": "US"
-      },
-      "source_registration_date": "2013-04-01T21:13:31Z",
-      "source_rir": "ARIN",
-      "transfer_date": "2026-04-14T18:59:21Z",
-      "type": "RESOURCE_TRANSFER"
-    }
-  ],
   "version": {
     "UTC_offset": -4,
     "producer": "ARIN",
@@ -550,12 +461,102 @@ The following JSON Schema formally defines the format of a transfer log JSON doc
       "Copyright (c) 2026 American Registry for Internet Numbers.",
       "ARIN Terms of Service for this transfers log can be found at https://www.arin.net/tos"
     ],
-    "stats_version": "4.0"
-  }
+    "stats_version": "5.0"
+  },
+  "transfers": [
+    {
+      "asns": {
+        "original_set": [
+          {
+            "start": 65536,
+            "end": 65539
+          }
+        ],
+        "transfer_set": [
+          {
+            "start": 65536,
+            "end": 65537
+          }
+        ]
+      },
+      "recipient_organization": {
+        "name": "Example1 Inc.",
+        "country_code": "US"
+      },
+      "recipient_rir": "ARIN",
+      "source_organization": {
+        "name": "Example2 Inc.",
+        "country_code": "AU"
+      },
+      "source_registration_date": "2001-05-18T04:00:00Z",
+      "source_rir": "APNIC",
+      "transfer_date": "2012-08-06T17:46:00Z",
+      "type": "MERGER_ACQUISITION",
+      "status": "recipientAccepted",
+      "status_date": "2012-08-06T17:46:00Z"
+    },
+    {
+      "ip6nets": {
+        "original_set": [
+          {
+            "start_address": "2001:db8::",
+            "end_address": "2001:db8:0:ffff:ffff:ffff:ffff:ffff"
+          }
+        ],
+        "transfer_set": [
+          {
+            "start_address": "2001:db8::",
+            "end_address": "2001:db8:0:ffff:ffff:ffff:ffff:ffff"
+          }
+        ]
+      },
+      "recipient_organization": {
+        "name": "Example3 Inc.",
+        "country_code": "US"
+      },
+      "recipient_rir": "ARIN",
+      "source_organization": {
+        "name": "Example4 Inc.",
+        "country_code": "US"
+      },
+      "source_registration_date": "2011-04-19T20:59:54Z",
+      "source_rir": "ARIN",
+      "transfer_date": "2015-06-22T18:23:56Z",
+      "type": "MERGER_ACQUISITION"
+    },
+    {
+      "ip4nets": {
+        "original_set": [
+          {
+            "start_address": "192.0.2.0",
+            "end_address": "192.0.2.255"
+          }
+        ],
+        "transfer_set": [
+          {
+            "start_address": "192.0.2.0",
+            "end_address": "192.0.2.127"
+          }
+        ]
+      },
+      "recipient_organization": {
+        "name": "Example5 Inc.",
+        "country_code": "NL"
+      },
+      "recipient_rir": "RIPE NCC",
+      "source_organization": {
+        "name": "Example6 Inc.",
+        "country_code": "CA"
+      },
+      "source_registration_date": "2013-04-01T21:13:31Z",
+      "source_rir": "ARIN",
+      "type": "RESOURCE_TRANSFER",
+      "status": "sourceCancelled",
+      "status_date": "2026-04-14T18:59:21Z"
+    }
+  ]
 }
 ```
-
-TODO: Use number resources reserved for example documentation.
 
 {backmatter}
 
