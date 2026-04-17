@@ -1,11 +1,11 @@
 %%%
-Title = "NRO Transfer Log"
-abbrev = "NRO Transfer Log"
+Title = "Regional Internet Registry (RIR) Transfer Log"
+abbrev = "RIR Transfer Log"
 ipr= "trust200902"
 
 [seriesInfo]
 name = "Internet-Draft"
-value = "nro-transfer-log-00"
+value = "rir-transfer-log-00"
 stream = "IETF"
 status = "standard"
 date = 2026-04-16T00:00:00Z
@@ -19,9 +19,9 @@ email = "secretariat@nro.net"
 
 .# Abstract
 
-This document specifies the format of the JSON document that each RIR produces to publish intra-RIR and inter-RIR
-transfers of IP addresses and Autonomous System Numbers (ASNs) for a given period. It utilizes JSON Schema to formally
-define this format.
+This document specifies the format of the JSON document that each Regional Internet Registry (RIR) produces to publish
+intra-RIR and inter-RIR transfers of IP addresses and Autonomous System Numbers (ASNs) for a given period. It utilizes
+JSON Schema to formally define this format.
 
 {mainmatter}
 
@@ -39,8 +39,8 @@ feature of this specification.
 # Introduction
 
 This document specifies the format of the JSON document that each RIR produces to publish intra-RIR and inter-RIR
-transfers of IP addresses and Autonomous System Numbers (ASNs) for a given period. It utilizes JSON Schema
-[@!I-D.dusseault-json-schema] to formally define this format.
+transfers of IP addresses and ASNs for a given period. It utilizes JSON Schema [@!I-D.dusseault-json-schema] to formally
+define this format.
 
 # Format
 
@@ -126,8 +126,8 @@ While these sets are often equivalent, the "original_set" can be larger than the
 which the "original_set" is unknown: the receiving RIR may not have knowledge of the "original_set" in the registry of
 the source RIR.
 
-The "source_rir" and "recipient_rir" values MUST be identical for intra-RIR transfers and distinct for inter-RIR
-transfers.
+The "source_rir" and "recipient_rir" values MUST be identical for an intra-RIR transfer and distinct for an inter-RIR
+transfer.
 
 The "status" and "status_date" fields are REQUIRED for an inter-RIR transfer. They provide clarity for resources in
 flight between two RIRs, resources when a transfer is cancelled, and a way to detect disputes in resources that are held
@@ -163,7 +163,7 @@ The following JSON Schema formally defines the format of a transfer log JSON doc
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://nro.net/rir_transfer_log.schema.json",
   "title": "RIR Transfer Log",
-  "description": "Schema to describe intra-RIR and inter-RIR transfers of IP addresses and Autonomous System Numbers (ASNs)",
+  "description": "Schema to describe intra-RIR and inter-RIR transfers of IP addresses and ASNs",
   "type": "object",
   "required": [
     "version",
