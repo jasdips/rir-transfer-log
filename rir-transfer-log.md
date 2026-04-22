@@ -8,7 +8,7 @@ name = "Internet-Draft"
 value = "rir-transfer-log-00"
 stream = "IETF"
 status = "standard"
-date = 2026-04-17T00:00:00Z
+date = 2026-04-22T00:00:00Z
 
 [[author]]
 organization="Number Resource Organization"
@@ -44,7 +44,7 @@ period. It utilizes JSON Schema [@!I-D.dusseault-json-schema] to formally define
 
 Salient changes from version 4.0 of Transfer Log [@!TRANSFER-LOG-4] are:
 
-* New "status" and "status_date" fields to track inter-RIR transfers.
+* New "status" field to track inter-RIR transfers.
 * The format is now defined using JSON Schema instead of JSON Content Rules (JCR) since the IETF has decided to
   standardize the former and not the latter.
 
@@ -118,11 +118,8 @@ The "transfers" object is an array of transfer objects. Each transfer object has
 * "type" -- (REQUIRED) A string representing the type of transfer, with possible values of "MERGER_ACQUISITION" or
   "RESOURCE_TRANSFER".
 * "status" -- (OPTIONAL) A string representing the status of an inter-RIR transfer, with possible values of
-  "sourceInitialized", "sourceCancelled", or "sourceFinalized" for the source RIR, and "recipientAccepted" or
-  "recipientCancelled" for the recipient RIR.
-* "status_date" -- (OPTIONAL) A string representing the date and time when an inter-RIR transfer transitioned to the
-  "status" value, per the date-time ABNF rule from [@!RFC3339], with a UTC offset of +00:00, denoted by a time-offset
-  ABNF rule value of "Z".
+  "SOURCE_INITIALIZED", "SOURCE_CANCELLED", or "SOURCE_FINALIZED" for the source RIR, and "RECIPIENT_ACCEPTED" or
+  "RECIPIENT_CANCELLED" for the recipient RIR.
 
 Each transfer object MUST contain only one of the "asns", "ip4nets", or "ip6nets" objects.
 
@@ -134,27 +131,26 @@ the source RIR.
 The "source_rir" and "recipient_rir" values MUST be identical for an intra-RIR transfer and distinct for an inter-RIR
 transfer.
 
-The "status" and "status_date" fields are REQUIRED for an inter-RIR transfer. They provide clarity for resources in
-flight between two RIRs, resources when a transfer is cancelled, and a way to detect disputes in resources that are held
-by both the RIRs.
+The "status" field is REQUIRED for an inter-RIR transfer. It provides clarity for resources in flight between two RIRs,
+resources when a transfer is cancelled, and a way to detect disputes in resources that are held by both the RIRs.
 
-The "status" and "status_date" fields MUST NOT be set for an intra-RIR transfer.
+The "status" field MUST NOT be set for an intra-RIR transfer.
 
 The successful path for an inter-RIR transfer would be:
 
-* sourceInitialized -> recipientAccepted -> sourceFinalized
+* SOURCE_INITIALIZED -> RECIPIENT_ACCEPTED -> SOURCE_FINALIZED
 
 When the source RIR initiates a transfer and the recipient RIR accepts it, the resource may be held in the inventory of
-both the RIRs. Once the source RIR issues "sourceFinalized", the resource MUST no longer be in its inventory.
+both the RIRs. Once the source RIR issues "SOURCE_FINALIZED", the resource MUST no longer be in its inventory.
 
 The unsuccessful paths for an inter-RIR transfer would be:
 
-* sourceInitialized -> sourceCancelled
-* sourceInitialized -> recipientAccepted -> recipientCancelled
+* SOURCE_INITIALIZED -> SOURCE_CANCELLED
+* SOURCE_INITIALIZED -> RECIPIENT_ACCEPTED -> RECIPIENT_CANCELLED
 
 When the resource is in dispute between two RIRs, the transfer path would be:
 
-* sourceInitialized -> recipientAccepted
+* SOURCE_INITIALIZED -> RECIPIENT_ACCEPTED
 
 In such a case, there would be no further status change until the matter is resolved. The resource would be held in the
 inventory of both the RIRs.
@@ -445,6 +441,15 @@ The following JSON Schema formally defines the format of a transfer log JSON doc
             "MERGER_ACQUISITION",
             "RESOURCE_TRANSFER"
           ]
+        },
+        "status": {
+          "enum": [
+            "SOURCE_INITIALIZED",
+            "SOURCE_CANCELLED",
+            "SOURCE_FINALIZED",
+            "RECIPIENT_ACCEPTED",
+            "RECIPIENT_CANCELLED"
+          ]
         }
       }
     }
@@ -499,8 +504,7 @@ The following JSON Schema formally defines the format of a transfer log JSON doc
       "source_rir": "APNIC",
       "transfer_date": "2012-08-06T17:46:00Z",
       "type": "MERGER_ACQUISITION",
-      "status": "recipientAccepted",
-      "status_date": "2012-08-06T17:46:00Z"
+      "status": "RECIPIENT_ACCEPTED"
     },
     {
       "ip6nets": {
@@ -558,8 +562,7 @@ The following JSON Schema formally defines the format of a transfer log JSON doc
       "source_registration_date": "2013-04-01T21:13:31Z",
       "source_rir": "ARIN",
       "type": "RESOURCE_TRANSFER",
-      "status": "sourceCancelled",
-      "status_date": "2026-04-14T18:59:21Z"
+      "status": "SOURCE_CANCELLED"
     }
   ]
 }
@@ -568,9 +571,9 @@ The following JSON Schema formally defines the format of a transfer log JSON doc
 In this example:
 
 * The "asns" object illustrates a successful inter-RIR transfer for the recipient RIR if the source RIR has the
-  "sourceFinalized" status on its end.
+  "SOURCE_FINALIZED" status on its end.
 * The "ip6nets" object illustrates a successful intra-RIR transfer.
-* The "ip4nets" object illustrates an unsuccessful inter-RIR transfer because of the "sourceCancelled"" status for the
+* The "ip4nets" object illustrates an unsuccessful inter-RIR transfer because of the "SOURCE_CANCELLED"" status for the
   source RIR.
 
 This example validates against the JSON Schema in (#json_schema), per [@JSON-SCHEMA-VALIDATOR].
