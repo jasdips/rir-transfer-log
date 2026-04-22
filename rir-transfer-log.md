@@ -78,13 +78,15 @@ The "transfers" object is an array of transfer objects. Each transfer object has
 * "asns" -- (OPTIONAL) Such an object has the following members:
     * "original_set" -- (OPTIONAL) An array of objects, each representing a contiguous block of ASNs.
     * "transfer_set" -- (REQUIRED) An array of objects, each representing a contiguous block of ASNs.
-      Both "original_set" and "transfer_set" arrays contain objects with the following members:
+
+        Both "original_set" and "transfer_set" arrays contain objects with the following members:
         * "start" -- (REQUIRED) An unsigned 32-bit integer representing the start ASN.
         * "end" -- (REQUIRED) An unsigned 32-bit integer representing the end ASN.
 * "ip4nets" -- (OPTIONAL) Such an object has the following members:
     * "original_set" -- (OPTIONAL) An array of objects, each representing a contiguous block of IPv4 addresses.
     * "transfer_set" -- (REQUIRED) An array of objects, each representing a contiguous block of IPv4 addresses.
-      Both "original_set" and "transfer_set" objects contain objects with the following members:
+
+        Both "original_set" and "transfer_set" objects contain objects with the following members:
         * "start_address" -- (REQUIRED) A string representing the start IPv4 address.
         * "end_address" -- (REQUIRED) A string representing the end IPv4 address.
         * "cidrs" -- (OPTIONAL) An array for IPv4 CIDR blocks which make up this IP block. Each IPv4 CIDR block object
@@ -94,16 +96,18 @@ The "transfers" object is an array of transfer objects. Each transfer object has
 * "ip6nets" -- (OPTIONAL) Such an object has the following members:
     * "original_set" -- (OPTIONAL) An array of objects, each representing a contiguous block of IPv6 addresses.
     * "transfer_set" -- (REQUIRED) An array of objects, each representing a contiguous block of IPv6 addresses.
-      Both "original_set" and "transfer_set" objects contain objects with the following members:
+
+        Both "original_set" and "transfer_set" objects contain objects with the following members:
         * "start_address" -- (REQUIRED) A string representing the start IPv6 address.
         * "end_address" -- (REQUIRED) A string representing the end IPv6 address.
         * "cidrs" -- (OPTIONAL) An array for IPv6 CIDR blocks which make up this IP block. Each IPv6 CIDR block object
           in this array has the following members:
             * "prefix" -- (REQUIRED) A string representing the IPv6 CIDR prefix.
             * "length" -- (REQUIRED) An integer representing the IPv6 CIDR length, with value from 0 to 128.
-* "source_organization" -- (REQUIRED) An object representing an organization that is the source of the transfer.
-* "recipient_organization" -- (REQUIRED) An object representing an organization that is the recipient of the transfer.
-  Both "source_organization" and "recipient_organization" objects have the following members:
+* "source_organization" -- (OPTIONAL) An object representing an organization that is the source of the transfer.
+* "recipient_organization" -- (OPTIONAL) An object representing an organization that is the recipient of the transfer.
+
+    Both "source_organization" and "recipient_organization" objects have the following members:
     * "name" -- (OPTIONAL) A string representing the name of the organization.
     * "country_code" -- (OPTIONAL) A string representing the 2-letter country code of the organization.
 * "transfer_date" -- (OPTIONAL) A string representing the date and time of the transfer, per the date-time ABNF rule
@@ -273,11 +277,13 @@ The following JSON Schema formally defines the format of a Transfer Log JSON doc
         "properties": {
           "start": {
             "type": "integer",
-            "format": "int32"
+            "minimum": 0,
+            "maximum": 4294967295
           },
           "end": {
             "type": "integer",
-            "format": "int32"
+            "minimum": 0,
+            "maximum": 4294967295
           }
         }
       }
@@ -462,6 +468,7 @@ The following JSON Schema formally defines the format of a Transfer Log JSON doc
 ```
 {
   "version": {
+    "stats_version": "5.0",
     "UTC_offset": -4,
     "producer": "ARIN",
     "production_date": "2026-04-15T03:59:11Z",
@@ -472,8 +479,7 @@ The following JSON Schema formally defines the format of a Transfer Log JSON doc
     "remarks": [
       "Copyright (c) 2026 Example Registry",
       "Example Registry's Terms of Service for this Transfer Log JSON document can be found at https://registry.example/tos"
-    ],
-    "stats_version": "5.0"
+    ]
   },
   "transfers": [
     {
