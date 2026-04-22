@@ -579,7 +579,7 @@ In this example:
 * The "asns" object illustrates a successful inter-RIR transfer for the recipient RIR if the source RIR has the
   "SOURCE_FINALIZED" status on its end.
 * The "ip6nets" object illustrates a successful intra-RIR transfer.
-* The "ip4nets" object illustrates an unsuccessful inter-RIR transfer because of the "SOURCE_CANCELLED"" status for the
+* The "ip4nets" object illustrates an unsuccessful inter-RIR transfer because of the "SOURCE_CANCELLED" status for the
   source RIR.
 
 This example validates against the JSON Schema in (#json_schema), per [@JSON-SCHEMA-VALIDATOR].
