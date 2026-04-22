@@ -19,7 +19,7 @@ email = "secretariat@nro.net"
 
 .# Abstract
 
-This document specifies version 5.0 of the JSON document called Transfer Log that each Regional Internet Registry (RIR)
+This document specifies version 5.0 of the Transfer Log JSON document that each Regional Internet Registry (RIR)
 produces to publish intra-RIR and inter-RIR transfers of IP addresses and Autonomous System Numbers (ASNs) for a given
 period. It utilizes JSON Schema to formally define the format.
 
@@ -38,7 +38,7 @@ feature of this specification.
 
 # Introduction
 
-This document specifies version 5.0 of the JSON document called Transfer Log that each Regional Internet Registry (RIR)
+This document specifies version 5.0 of the Transfer Log JSON document that each Regional Internet Registry (RIR)
 produces to publish intra-RIR and inter-RIR transfers of IP addresses and Autonomous System Numbers (ASNs) for a given
 period. It utilizes JSON Schema [@!I-D.dusseault-json-schema] to formally define the format.
 
@@ -50,14 +50,14 @@ Salient changes from version 4.0 of Transfer Log [@!TRANSFER-LOG-4] are:
 
 # Format
 
-In a transfer log JSON document, the root object MUST contain two objects: a "version" object and a "transfers" object.
+In a Transfer Log JSON document, the root object MUST contain two objects: a "version" object and a "transfers" object.
 
 The "version" object is the metadata information for the produced document, and has the following members:
 
-* "stats_version" -- (REQUIRED) A string representing the version of the transfer log, with a value of "5.0" for this
-  version.
+* "stats_version" -- (REQUIRED) A string representing the version of the Transfer Log JSON document, with a value of
+  "5.0" for this version.
 * "producer" -- (REQUIRED) A string identifying the organization, either one of the RIRs or the NRO, that produced the
-  transfer log document, with possible values of "AFRINIC", "APNIC", "ARIN", "LACNIC", "RIPE NCC", or "NRO".
+  Transfer Log JSON document, with possible values of "AFRINIC", "APNIC", "ARIN", "LACNIC", "RIPE NCC", or "NRO".
 * "UTC_offset" -- (REQUIRED) An integer representing the UTC offset of the producer, with value from -12 to 12.
 * "production_date" -- (REQUIRED) A string containing the date and time at which the document was produced, per the
   date-time ABNF rule from [@!RFC3339], with a UTC offset of +00:00, denoted by a time-offset ABNF rule value of "Z".
@@ -159,7 +159,7 @@ A> Is the "NRO" value for the "producer" field needed any longer?
 
 # JSON Schema {#json_schema}
 
-The following JSON Schema formally defines the format of a transfer log JSON document:
+The following JSON Schema formally defines the format of a Transfer Log JSON document:
 
 ```
 {
@@ -471,7 +471,7 @@ The following JSON Schema formally defines the format of a transfer log JSON doc
     },
     "remarks": [
       "Copyright (c) 2026 Example Registry",
-      "Example Registry's Terms of Service for this transfer log can be found at https://registry.example/tos"
+      "Example Registry's Terms of Service for this Transfer Log JSON document can be found at https://registry.example/tos"
     ],
     "stats_version": "5.0"
   },
