@@ -814,7 +814,7 @@ Internet-Draft              RIR Transfer Log                  April 2026
       status on its end.
    *  The "ip6nets" object illustrates a successful intra-RIR transfer.
    *  The "ip4nets" object illustrates an unsuccessful inter-RIR
-      transfer because of the "SOURCE_CANCELLED"" status for the source
+      transfer because of the "SOURCE_CANCELLED" status for the source
       RIR.
 
    This example validates against the JSON Schema in Section 4, per
