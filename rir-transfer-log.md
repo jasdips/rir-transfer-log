@@ -5,10 +5,10 @@ ipr= "trust200902"
 
 [seriesInfo]
 name = "Internet-Draft"
-value = "rir-transfer-log-00"
+value = "rir-transfer-log-01"
 stream = "IETF"
 status = "standard"
-date = 2026-04-22T00:00:00Z
+date = 2026-05-19T00:00:00Z
 
 [[author]]
 organization="Number Resource Organization"
@@ -19,9 +19,9 @@ email = "secretariat@nro.net"
 
 .# Abstract
 
-This document specifies version 5.0 of the Transfer Log JSON document that each Regional Internet Registry (RIR)
-produces to publish intra-RIR and inter-RIR transfers of IP addresses and Autonomous System Numbers (ASNs) for a given
-period. It utilizes JSON Schema to formally define the format.
+This document specifies version 4.1 of the Transfer Log JSON document that each Regional Internet Registry (RIR)
+produces to publish completed and in-progress intra-RIR and inter-RIR transfers of IP addresses and Autonomous System
+Numbers (ASNs) for a given period. It utilizes JSON Schema to formally define the format.
 
 {mainmatter}
 
@@ -38,24 +38,25 @@ feature of this specification.
 
 # Introduction
 
-This document specifies version 5.0 of the Transfer Log JSON document that each Regional Internet Registry (RIR)
-produces to publish intra-RIR and inter-RIR transfers of IP addresses and Autonomous System Numbers (ASNs) for a given
-period. It utilizes JSON Schema [@!I-D.dusseault-json-schema] to formally define the format.
+This document specifies version 4.1 of the Transfer Log JSON document that each Regional Internet Registry (RIR)
+produces to publish completed and in-progress intra-RIR and inter-RIR transfers of IP addresses and Autonomous System
+Numbers (ASNs) for a given period. It utilizes JSON Schema [@!I-D.ietf-jsonschema-json-schema] to formally define the
+format.
 
 Salient changes from version 4.0 of Transfer Log [@!TRANSFER-LOG-4] are:
 
-* New "status" field to track inter-RIR transfers.
-* The format is now defined using JSON Schema instead of JSON Content Rules (JCR) since the IETF has decided to
-  standardize the former and not the latter.
+* New "transfers_in_progress" member to track in-progress intra-RIR and inter-RIR transfers.
+* The format is now defined using JSON Schema instead of JSON Content Rules (JCR).
 
 # Format
 
-In a Transfer Log JSON document, the root object MUST contain two objects: a "version" object and a "transfers" object.
+In a Transfer Log JSON document, the root object MUST contain three objects: "version", "transfers", and
+"transfers_in_progress".
 
 The "version" object is the metadata information for the produced document, and has the following members:
 
 * "stats_version" -- (REQUIRED) A string representing the version of the Transfer Log JSON document, with a value of
-  "5.0" for this version.
+  "4.1" for this version.
 * "producer" -- (REQUIRED) A string identifying the organization, either one of the RIRs or the NRO, that produced the
   Transfer Log JSON document, with possible values of "AFRINIC", "APNIC", "ARIN", "LACNIC", "RIPE NCC", or "NRO".
 * "UTC_offset" -- (REQUIRED) An integer representing the UTC offset of the producer, with value from -12 to 12.
@@ -73,7 +74,8 @@ The "version" object is the metadata information for the produced document, and 
   contexts, these might be called paragraphs). This is where the producer would put copyright notices, terms of service
   for the data, and production notes.
 
-The "transfers" object is an array of transfer objects. Each transfer object has the following members:
+The "transfers" object is an array of objects for completed intra-RIR and inter-RIR transfers. Each object within this
+array has the following members:
 
 * "asns" -- (OPTIONAL) Such an object has the following members:
     * "original_set" -- (OPTIONAL) An array of objects, each representing a contiguous block of ASNs.
@@ -110,8 +112,8 @@ The "transfers" object is an array of transfer objects. Each transfer object has
     Both "source_organization" and "recipient_organization" objects have the following members:
     * "name" -- (OPTIONAL) A string representing the name of the organization.
     * "country_code" -- (OPTIONAL) A string representing the 2-letter country code of the organization.
-* "transfer_date" -- (OPTIONAL) A string representing the date and time of the transfer, per the date-time ABNF rule
-  from [@!RFC3339], with a UTC offset of +00:00, denoted by a time-offset ABNF rule value of "Z".
+* "transfer_date" -- (OPTIONAL) A string representing the date and time of the completed transfer, per the date-time
+  ABNF rule from [@!RFC3339], with a UTC offset of +00:00, denoted by a time-offset ABNF rule value of "Z".
 * "source_registration_date" -- (OPTIONAL) A string representing the date and time of the registration of source
   resources in the source RIR, per the date-time ABNF rule from [@!RFC3339], with a UTC offset of +00:00, denoted by a
   time-offset ABNF rule value of "Z".
@@ -121,11 +123,8 @@ The "transfers" object is an array of transfer objects. Each transfer object has
   "ARIN", "LACNIC", or "RIPE NCC".
 * "type" -- (REQUIRED) A string representing the type of transfer, with possible values of "MERGER_ACQUISITION" or
   "RESOURCE_TRANSFER".
-* "status" -- (OPTIONAL) A string representing the status of an inter-RIR transfer, with possible values of
-  "SOURCE_INITIALIZED", "SOURCE_CANCELLED", or "SOURCE_FINALIZED" for the source RIR, and "RECIPIENT_ACCEPTED" or
-  "RECIPIENT_CANCELLED" for the recipient RIR.
 
-Each transfer object MUST contain only one of the "asns", "ip4nets", or "ip6nets" objects.
+Each completed transfer object MUST contain at least one of the "asns", "ip4nets", or "ip6nets" objects.
 
 An "original_set" object describes the set of resources in the registry from which the related "transfer_set" is taken.
 While these sets are often equivalent, the "original_set" can be larger than the "transfer_set". There are transfers in
@@ -135,31 +134,65 @@ the source RIR.
 The "source_rir" and "recipient_rir" values MUST be identical for an intra-RIR transfer and distinct for an inter-RIR
 transfer.
 
-The "status" field is REQUIRED for an inter-RIR transfer. It provides clarity for resources in flight between two RIRs,
-resources when a transfer is cancelled, and a way to detect disputes in resources that are held by both the RIRs.
+The "transfers_in_progress" object is an array of objects for in-progress intra-RIR and inter-RIR transfers. Each object
+within this array has the following members:
 
-The "status" field MUST NOT be set for an intra-RIR transfer.
+* "asns" -- (OPTIONAL) Such an object has the following members:
+    * "original_set" -- (OPTIONAL) An array of objects, each representing a contiguous block of ASNs.
+    * "transfer_set" -- (REQUIRED) An array of objects, each representing a contiguous block of ASNs.
 
-The successful path for an inter-RIR transfer would be:
+        Both "original_set" and "transfer_set" arrays contain objects with the following members:
+        * "start" -- (REQUIRED) An unsigned 32-bit integer representing the start ASN.
+        * "end" -- (REQUIRED) An unsigned 32-bit integer representing the end ASN.
+* "ip4nets" -- (OPTIONAL) Such an object has the following members:
+    * "original_set" -- (OPTIONAL) An array of objects, each representing a contiguous block of IPv4 addresses.
+    * "transfer_set" -- (REQUIRED) An array of objects, each representing a contiguous block of IPv4 addresses.
 
-* SOURCE_INITIALIZED -> RECIPIENT_ACCEPTED -> SOURCE_FINALIZED
+        Both "original_set" and "transfer_set" objects contain objects with the following members:
+        * "start_address" -- (REQUIRED) A string representing the start IPv4 address.
+        * "end_address" -- (REQUIRED) A string representing the end IPv4 address.
+        * "cidrs" -- (OPTIONAL) An array for IPv4 CIDR blocks which make up this IP block. Each IPv4 CIDR block object
+          in this array has the following members:
+            * "prefix" -- (REQUIRED) A string representing the IPv4 CIDR prefix.
+            * "length" -- (REQUIRED) An integer representing the IPv4 CIDR length, with value from 0 to 32.
+* "ip6nets" -- (OPTIONAL) Such an object has the following members:
+    * "original_set" -- (OPTIONAL) An array of objects, each representing a contiguous block of IPv6 addresses.
+    * "transfer_set" -- (REQUIRED) An array of objects, each representing a contiguous block of IPv6 addresses.
 
-When the source RIR initiates a transfer and the recipient RIR accepts it, the resource may be held in the inventory of
-both the RIRs. Once the source RIR issues "SOURCE_FINALIZED", the resource MUST no longer be in its inventory.
+        Both "original_set" and "transfer_set" objects contain objects with the following members:
+        * "start_address" -- (REQUIRED) A string representing the start IPv6 address.
+        * "end_address" -- (REQUIRED) A string representing the end IPv6 address.
+        * "cidrs" -- (OPTIONAL) An array for IPv6 CIDR blocks which make up this IP block. Each IPv6 CIDR block object
+          in this array has the following members:
+            * "prefix" -- (REQUIRED) A string representing the IPv6 CIDR prefix.
+            * "length" -- (REQUIRED) An integer representing the IPv6 CIDR length, with value from 0 to 128.
+* "source_organization" -- (OPTIONAL) An object representing an organization that is the source of the transfer.
+* "recipient_organization" -- (OPTIONAL) An object representing an organization that is the recipient of the transfer.
 
-The unsuccessful paths for an inter-RIR transfer would be:
+    Both "source_organization" and "recipient_organization" objects have the following members:
+    * "name" -- (OPTIONAL) A string representing the name of the organization.
+    * "country_code" -- (OPTIONAL) A string representing the 2-letter country code of the organization.
+* "source_registration_date" -- (OPTIONAL) A string representing the date and time of the registration of source
+  resources in the source RIR, per the date-time ABNF rule from [@!RFC3339], with a UTC offset of +00:00, denoted by a
+  time-offset ABNF rule value of "Z".
+* "source_rir" -- (REQUIRED) A string identifying the source RIR, with possible values of "AFRINIC", "APNIC", "ARIN",
+  "LACNIC", or "RIPE NCC".
+* "recipient_rir" -- (REQUIRED) A string identifying the recipient RIR, with possible values of "AFRINIC", "APNIC",
+  "ARIN", "LACNIC", or "RIPE NCC".
+* "type" -- (REQUIRED) A string representing the type of transfer, with possible values of "MERGER_ACQUISITION" or
+  "RESOURCE_TRANSFER".
+* "status" -- (REQUIRED) A string representing the status of a transfer, with possible values of "SOURCE_INITIALIZED"
+  for the source side, and "RECIPIENT_ACCEPTED" for the recipient side.
 
-* SOURCE_INITIALIZED -> SOURCE_CANCELLED
-* SOURCE_INITIALIZED -> RECIPIENT_ACCEPTED -> RECIPIENT_CANCELLED
+Each in-progress transfer object MUST contain at least one of the "asns", "ip4nets", or "ip6nets" objects.
 
-When the resource is in dispute between two RIRs, the transfer path would be:
+An "original_set" object describes the set of resources in the registry from which the related "transfer_set" is taken.
+While these sets are often equivalent, the "original_set" can be larger than the "transfer_set". There are transfers in
+which the "original_set" is unknown: the recipient RIR may not have knowledge of the "original_set" in the registry of
+the source RIR.
 
-* SOURCE_INITIALIZED -> RECIPIENT_ACCEPTED
-
-In such a case, there would be no further status change until the matter is resolved. The resource would be held in the
-inventory of both the RIRs.
-
-A> Is the "NRO" value for the "producer" field needed any longer?
+The "source_rir" and "recipient_rir" values MUST be identical for an intra-RIR transfer and distinct for an inter-RIR
+transfer.
 
 # JSON Schema {#json_schema}
 
