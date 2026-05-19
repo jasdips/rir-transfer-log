@@ -50,7 +50,7 @@ Salient changes from version 4.0 of Transfer Log [@!TRANSFER-LOG-4] are:
 
 # Common Data Members {#common_data_members}
 
-The JSON objects defined in (#transfer_log_format) can contain the following common members:
+The JSON defined in (#transfer_log_format) can contain the following common members:
 
 * "asns" -- An object representing ASNs, with the following members:
     * "original_set" -- (OPTIONAL) An array of objects, each representing a contiguous block of ASNs.
@@ -104,12 +104,13 @@ the source RIR.
 
 # Format {#transfer_log_format}
 
-In a Transfer Log JSON document, the root object MUST contain three objects: "version", "transfers", and
-"transfers_in_progress".
+In a Transfer Log JSON document, the root object MUST contain the "version" and "transfers" members, and MAY contain
+the "transfers_in_progress" member.
 
 ## Metadata
 
-The "version" object is the metadata information for the produced document, and has the following members:
+The "version" member is an object representing the metadata information for the produced document, and has the following
+members:
 
 * "stats_version" -- (REQUIRED) A string representing the version of the Transfer Log JSON document, with a value of
   "4.1" for this version.
@@ -132,7 +133,7 @@ The "version" object is the metadata information for the produced document, and 
 
 ## Completed Transfers
 
-The "transfers" object is an array of objects for completed intra-RIR and inter-RIR transfers. Each object within this
+The "transfers" member is an array of objects for completed intra-RIR and inter-RIR transfers. Each object within this
 array has the following members:
 
 * "asns" -- (OPTIONAL) See (#common_data_members).
@@ -154,7 +155,7 @@ transfer.
 
 ## In-Progress Transfers
 
-The "transfers_in_progress" object is an array of objects for in-progress intra-RIR and inter-RIR transfers. Each object
+The "transfers_in_progress" member is an array of objects for in-progress intra-RIR and inter-RIR transfers. Each object
 within this array has the following members:
 
 * "asns" -- (OPTIONAL) See (#common_data_members).
@@ -167,7 +168,7 @@ within this array has the following members:
 * "recipient_rir" -- (REQUIRED) See (#common_data_members).
 * "type" -- (REQUIRED) See (#common_data_members).
 * "status" -- (REQUIRED) A string representing the status of a transfer, with possible values of "SOURCE_INITIALIZED"
-  for the source side, and "RECIPIENT_ACCEPTED" for the recipient side.
+  for the source side and "RECIPIENT_ACCEPTED" for the recipient side.
 
 Each in-progress transfer object MUST contain at least one of the "asns", "ip4nets", or "ip6nets" objects.
 
@@ -201,10 +202,12 @@ The following JSON Schema formally defines the format of a Transfer Log JSON doc
       ],
       "properties": {
         "stats_version": {
-          "const": "5.0"
+          "type": "string",
+          "const": "4.1"
         },
         "producer": {
-          "$ref": "#/$defs/rir_or_nro"
+          "type": "string",
+          "enum": ["AFRINIC", "APNIC", "ARIN", "LACNIC", "RIPE NCC", "NRO"]
         },
         "UTC_offset": {
           "type": "integer",
@@ -213,22 +216,22 @@ The following JSON Schema formally defines the format of a Transfer Log JSON doc
         },
         "production_date": {
           "type": "string",
-          "format": "date-time"
+          "format": "date-time",
+          "pattern": "Z$"
         },
         "records_interval": {
           "type": "object",
-          "required": [
-            "start_date",
-            "end_date"
-          ],
+          "required": ["start_date", "end_date"],
           "properties": {
             "start_date": {
               "type": "string",
-              "format": "date-time"
+              "format": "date-time",
+              "pattern": "Z$"
             },
             "end_date": {
               "type": "string",
-              "format": "date-time"
+              "format": "date-time",
+              "pattern": "Z$"
             }
           }
         },
@@ -243,232 +246,215 @@ The following JSON Schema formally defines the format of a Transfer Log JSON doc
     "transfers": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/transfer"
+        "type": "object",
+        "required": [
+          "source_rir",
+          "recipient_rir",
+          "type"
+        ],
+        "anyOf": [
+          { "required": ["asns"] },
+          { "required": ["ip4nets"] },
+          { "required": ["ip6nets"] }
+        ],
+        "properties": {
+          "asns": { "$ref": "#/$defs/asns" },
+          "ip4nets": { "$ref": "#/$defs/ip4nets" },
+          "ip6nets": { "$ref": "#/$defs/ip6nets" },
+          "source_organization": { "$ref": "#/$defs/organization" },
+          "recipient_organization": { "$ref": "#/$defs/organization" },
+          "transfer_date": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "Z$"
+          },
+          "source_registration_date": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "Z$"
+          },
+          "source_rir": { "$ref": "#/$defs/rir_names" },
+          "recipient_rir": { "$ref": "#/$defs/rir_names" },
+          "type": { "$ref": "#/$defs/transfer_types" }
+        }
+      }
+    },
+    "transfers_in_progress": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "source_rir",
+          "recipient_rir",
+          "type",
+          "status"
+        ],
+        "anyOf": [
+          { "required": ["asns"] },
+          { "required": ["ip4nets"] },
+          { "required": ["ip6nets"] }
+        ],
+        "properties": {
+          "asns": { "$ref": "#/$defs/asns" },
+          "ip4nets": { "$ref": "#/$defs/ip4nets" },
+          "ip6nets": { "$ref": "#/$defs/ip6nets" },
+          "source_organization": { "$ref": "#/$defs/organization" },
+          "recipient_organization": { "$ref": "#/$defs/organization" },
+          "source_registration_date": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "Z$"
+          },
+          "source_rir": { "$ref": "#/$defs/rir_names" },
+          "recipient_rir": { "$ref": "#/$defs/rir_names" },
+          "type": { "$ref": "#/$defs/transfer_types" },
+          "status": {
+            "type": "string",
+            "enum": ["SOURCE_INITIALIZED", "RECIPIENT_ACCEPTED"]
+          }
+        }
       }
     }
   },
+
   "$defs": {
-    "rir": {
-      "enum": [
-        "AFRINIC",
-        "APNIC",
-        "ARIN",
-        "LACNIC",
-        "RIPE NCC"
-      ]
+    "rir_names": {
+      "type": "string",
+      "enum": ["AFRINIC", "APNIC", "ARIN", "LACNIC", "RIPE NCC"]
     },
-    "rir_or_nro": {
-      "anyOf": [
-        {
-          "$ref": "#/$defs/rir"
-        },
-        {
-          "const": "NRO"
-        }
-      ]
+    "transfer_types": {
+      "type": "string",
+      "enum": ["MERGER_ACQUISITION", "RESOURCE_TRANSFER"]
     },
     "organization": {
       "type": "object",
       "properties": {
-        "name": {
-          "type": "string"
-        },
+        "name": { "type": "string" },
         "country_code": {
           "type": "string",
           "pattern": "^[A-Z]{2}$"
         }
       }
     },
-    "asn_set": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": [
-          "start",
-          "end"
-        ],
-        "properties": {
-          "start": {
-            "type": "integer",
-            "minimum": 0,
-            "maximum": 4294967295
-          },
-          "end": {
-            "type": "integer",
-            "minimum": 0,
-            "maximum": 4294967295
-          }
-        }
-      }
-    },
-    "ip4_set": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": [
-          "start_address",
-          "end_address"
-        ],
-        "properties": {
-          "start_address": {
-            "type": "string",
-            "format": "ipv4"
-          },
-          "end_address": {
-            "type": "string",
-            "format": "ipv4"
-          },
-          "cidrs": {
-            "type": "array",
-            "minItems": 1,
-            "items": {
-              "type": "object",
-              "required": [
-                "prefix",
-                "length"
-              ],
-              "properties": {
-                "prefix": {
-                  "type": "string",
-                  "format": "ipv4"
-                },
-                "length": {
-                  "type": "integer",
-                  "minimum": 0,
-                  "maximum": 32
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "ip6_set": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": [
-          "start_address",
-          "end_address"
-        ],
-        "properties": {
-          "start_address": {
-            "type": "string",
-            "format": "ipv6"
-          },
-          "end_address": {
-            "type": "string",
-            "format": "ipv6"
-          },
-          "cidrs": {
-            "type": "array",
-            "minItems": 1,
-            "items": {
-              "type": "object",
-              "required": [
-                "prefix",
-                "length"
-              ],
-              "properties": {
-                "prefix": {
-                  "type": "string",
-                  "format": "ipv6"
-                },
-                "length": {
-                  "type": "integer",
-                  "minimum": 0,
-                  "maximum": 128
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "transfer": {
+    "asn_range": {
       "type": "object",
-      "required": [
-        "source_rir",
-        "recipient_rir",
-        "type"
-      ],
+      "required": ["start", "end"],
       "properties": {
-        "asns": {
-          "type": "object",
-          "required": [
-            "transfer_set"
-          ],
-          "properties": {
-            "original_set": {
-              "$ref": "#/$defs/asn_set"
-            },
-            "transfer_set": {
-              "$ref": "#/$defs/asn_set"
-            }
-          }
+        "start": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
         },
-        "ip4nets": {
-          "type": "object",
-          "required": [
-            "transfer_set"
-          ],
-          "properties": {
-            "original_set": {
-              "$ref": "#/$defs/ip4_set"
-            },
-            "transfer_set": {
-              "$ref": "#/$defs/ip4_set"
-            }
-          }
+        "end": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        }
+      }
+    },
+    "asns": {
+      "type": "object",
+      "required": ["transfer_set"],
+      "properties": {
+        "original_set": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/asn_range" }
         },
-        "ip6nets": {
-          "type": "object",
-          "required": [
-            "transfer_set"
-          ],
-          "properties": {
-            "original_set": {
-              "$ref": "#/$defs/ip6_set"
-            },
-            "transfer_set": {
-              "$ref": "#/$defs/ip6_set"
-            }
-          }
-        },
-        "source_organization": {
-          "$ref": "#/$defs/organization"
-        },
-        "recipient_organization": {
-          "$ref": "#/$defs/organization"
-        },
-        "transfer_date": {
+        "transfer_set": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/asn_range" }
+        }
+      }
+    },
+    "ip4_range": {
+      "type": "object",
+      "required": ["start_address", "end_address"],
+      "properties": {
+        "start_address": {
           "type": "string",
-          "format": "date-time"
+          "format": "ipv4"
         },
-        "source_registration_date": {
+        "end_address": {
           "type": "string",
-          "format": "date-time"
+          "format": "ipv4"
         },
-        "source_rir": {
-          "$ref": "#/$defs/rir"
+        "cidrs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["prefix", "length"],
+            "properties": {
+              "prefix": {
+                "type": "string",
+                "format": "ipv4"
+              },
+              "length": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 32
+              }
+            }
+          }
+        }
+      }
+    },
+    "ip4nets": {
+      "type": "object",
+      "required": ["transfer_set"],
+      "properties": {
+        "original_set": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ip4_range" }
         },
-        "recipient_rir": {
-          "$ref": "#/$defs/rir"
+        "transfer_set": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ip4_range" }
+        }
+      }
+    },
+    "ip6_range": {
+      "type": "object",
+      "required": ["start_address", "end_address"],
+      "properties": {
+        "start_address": {
+          "type": "string",
+          "format": "ipv6"
         },
-        "type": {
-          "enum": [
-            "MERGER_ACQUISITION",
-            "RESOURCE_TRANSFER"
-          ]
+        "end_address": {
+          "type": "string",
+          "format": "ipv6"
         },
-        "status": {
-          "enum": [
-            "SOURCE_INITIALIZED",
-            "SOURCE_CANCELLED",
-            "SOURCE_FINALIZED",
-            "RECIPIENT_ACCEPTED",
-            "RECIPIENT_CANCELLED"
-          ]
+        "cidrs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["prefix", "length"],
+            "properties": {
+              "prefix": {
+                "type": "string",
+                "format": "ipv6"
+              },
+              "length": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 128
+              }
+            }
+          }
+        }
+      }
+    },
+    "ip6nets": {
+      "type": "object",
+      "required": ["transfer_set"],
+      "properties": {
+        "original_set": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ip6_range" }
+        },
+        "transfer_set": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ip6_range" }
         }
       }
     }
@@ -481,7 +467,7 @@ The following JSON Schema formally defines the format of a Transfer Log JSON doc
 ```
 {
   "version": {
-    "stats_version": "5.0",
+    "stats_version": "4.1",
     "UTC_offset": -4,
     "producer": "ARIN",
     "production_date": "2026-04-15T03:59:11Z",
@@ -522,8 +508,7 @@ The following JSON Schema formally defines the format of a Transfer Log JSON doc
       "source_registration_date": "2001-05-18T04:00:00Z",
       "source_rir": "APNIC",
       "transfer_date": "2012-08-06T17:46:00Z",
-      "type": "MERGER_ACQUISITION",
-      "status": "RECIPIENT_ACCEPTED"
+      "type": "MERGER_ACQUISITION"
     },
     {
       "ip6nets": {
@@ -553,7 +538,9 @@ The following JSON Schema formally defines the format of a Transfer Log JSON doc
       "source_rir": "ARIN",
       "transfer_date": "2015-06-22T18:23:56Z",
       "type": "MERGER_ACQUISITION"
-    },
+    }
+  ],
+  "transfers_in_progress": [
     {
       "ip4nets": {
         "original_set": [
@@ -581,7 +568,7 @@ The following JSON Schema formally defines the format of a Transfer Log JSON doc
       "source_registration_date": "2013-04-01T21:13:31Z",
       "source_rir": "ARIN",
       "type": "RESOURCE_TRANSFER",
-      "status": "SOURCE_CANCELLED"
+      "status": "SOURCE_INITIALIZED"
     }
   ]
 }
@@ -589,11 +576,11 @@ The following JSON Schema formally defines the format of a Transfer Log JSON doc
 
 In this example:
 
-* The "asns" object illustrates a successful inter-RIR transfer for the recipient RIR if the source RIR has the
-  "SOURCE_FINALIZED" status on its end.
-* The "ip6nets" object illustrates a successful intra-RIR transfer.
-* The "ip4nets" object illustrates an unsuccessful inter-RIR transfer because of the "SOURCE_CANCELLED" status for the
-  source RIR.
+* The object with the "asns" member in the "transfers" array illustrates a completed inter-RIR transfer for the
+  recipient RIR.
+* The object with the "ip6nets" member in the "transfers" array illustrates a completed intra-RIR transfer.
+* The object with the "ip4nets" member in the "transfers_in_progress" array illustrates an in-progress inter-RIR
+  transfer with the "SOURCE_INITIALIZED" status for the source RIR.
 
 This example validates against the JSON Schema in (#json_schema), per [@JSON-SCHEMA-VALIDATOR].
 
