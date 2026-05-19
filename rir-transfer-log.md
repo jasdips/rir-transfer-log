@@ -48,10 +48,66 @@ Salient changes from version 4.0 of Transfer Log [@!TRANSFER-LOG-4] are:
 * New "transfers_in_progress" member to track in-progress intra-RIR and inter-RIR transfers.
 * The format is now defined using JSON Schema instead of JSON Content Rules (JCR).
 
-# Format
+# Common Data Members {#common_data_members}
+
+The JSON objects defined in (#transfer_log_format) can contain the following common members:
+
+* "asns" -- An object representing ASNs, with the following members:
+    * "original_set" -- (OPTIONAL) An array of objects, each representing a contiguous block of ASNs.
+    * "transfer_set" -- (REQUIRED) An array of objects, each representing a contiguous block of ASNs.
+
+        Both "original_set" and "transfer_set" arrays contain objects with the following members:
+        * "start" -- (REQUIRED) An unsigned 32-bit integer representing the start ASN.
+        * "end" -- (REQUIRED) An unsigned 32-bit integer representing the end ASN.
+* "ip4nets" -- An object representing IPv4 addresses, with the following members:
+    * "original_set" -- (OPTIONAL) An array of objects, each representing a contiguous block of IPv4 addresses.
+    * "transfer_set" -- (REQUIRED) An array of objects, each representing a contiguous block of IPv4 addresses.
+
+        Both "original_set" and "transfer_set" objects contain objects with the following members:
+        * "start_address" -- (REQUIRED) A string representing the start IPv4 address.
+        * "end_address" -- (REQUIRED) A string representing the end IPv4 address.
+        * "cidrs" -- (OPTIONAL) An array for IPv4 CIDR blocks which make up this IP block. Each IPv4 CIDR block object
+          in this array has the following members:
+            * "prefix" -- (REQUIRED) A string representing the IPv4 CIDR prefix.
+            * "length" -- (REQUIRED) An integer representing the IPv4 CIDR length, with value from 0 to 32.
+* "ip6nets" -- An object representing IPv6 addresses, with the following members:
+    * "original_set" -- (OPTIONAL) An array of objects, each representing a contiguous block of IPv6 addresses.
+    * "transfer_set" -- (REQUIRED) An array of objects, each representing a contiguous block of IPv6 addresses.
+
+        Both "original_set" and "transfer_set" objects contain objects with the following members:
+        * "start_address" -- (REQUIRED) A string representing the start IPv6 address.
+        * "end_address" -- (REQUIRED) A string representing the end IPv6 address.
+        * "cidrs" -- (OPTIONAL) An array for IPv6 CIDR blocks which make up this IP block. Each IPv6 CIDR block object
+          in this array has the following members:
+            * "prefix" -- (REQUIRED) A string representing the IPv6 CIDR prefix.
+            * "length" -- (REQUIRED) An integer representing the IPv6 CIDR length, with value from 0 to 128.
+* "source_organization" -- An object representing an organization that is the source of the transfer.
+* "recipient_organization" -- An object representing an organization that is the recipient of the transfer.
+
+    Both "source_organization" and "recipient_organization" objects have the following members:
+    * "name" -- (OPTIONAL) A string representing the name of the organization.
+    * "country_code" -- (OPTIONAL) A string representing the 2-letter country code of the organization.
+* "source_registration_date" -- A string representing the date and time of the registration of source resources in the
+  source RIR, per the date-time ABNF rule from [@!RFC3339], with a UTC offset of +00:00, denoted by a time-offset ABNF
+  rule value of "Z".
+* "source_rir" -- A string identifying the source RIR, with possible values of "AFRINIC", "APNIC", "ARIN", "LACNIC", or
+  "RIPE NCC".
+* "recipient_rir" -- A string identifying the recipient RIR, with possible values of "AFRINIC", "APNIC", "ARIN",
+  "LACNIC", or "RIPE NCC".
+* "type" -- A string representing the type of transfer, with possible values of "MERGER_ACQUISITION" or
+  "RESOURCE_TRANSFER".
+
+An "original_set" object describes the set of resources in the registry from which the related "transfer_set" is taken.
+While these sets are often equivalent, the "original_set" can be larger than the "transfer_set". There are transfers in
+which the "original_set" is unknown: the recipient RIR may not have knowledge of the "original_set" in the registry of
+the source RIR.
+
+# Format {#transfer_log_format}
 
 In a Transfer Log JSON document, the root object MUST contain three objects: "version", "transfers", and
 "transfers_in_progress".
+
+## Metadata
 
 The "version" object is the metadata information for the produced document, and has the following members:
 
@@ -74,122 +130,46 @@ The "version" object is the metadata information for the produced document, and 
   contexts, these might be called paragraphs). This is where the producer would put copyright notices, terms of service
   for the data, and production notes.
 
+## Completed Transfers
+
 The "transfers" object is an array of objects for completed intra-RIR and inter-RIR transfers. Each object within this
 array has the following members:
 
-* "asns" -- (OPTIONAL) Such an object has the following members:
-    * "original_set" -- (OPTIONAL) An array of objects, each representing a contiguous block of ASNs.
-    * "transfer_set" -- (REQUIRED) An array of objects, each representing a contiguous block of ASNs.
-
-        Both "original_set" and "transfer_set" arrays contain objects with the following members:
-        * "start" -- (REQUIRED) An unsigned 32-bit integer representing the start ASN.
-        * "end" -- (REQUIRED) An unsigned 32-bit integer representing the end ASN.
-* "ip4nets" -- (OPTIONAL) Such an object has the following members:
-    * "original_set" -- (OPTIONAL) An array of objects, each representing a contiguous block of IPv4 addresses.
-    * "transfer_set" -- (REQUIRED) An array of objects, each representing a contiguous block of IPv4 addresses.
-
-        Both "original_set" and "transfer_set" objects contain objects with the following members:
-        * "start_address" -- (REQUIRED) A string representing the start IPv4 address.
-        * "end_address" -- (REQUIRED) A string representing the end IPv4 address.
-        * "cidrs" -- (OPTIONAL) An array for IPv4 CIDR blocks which make up this IP block. Each IPv4 CIDR block object
-          in this array has the following members:
-            * "prefix" -- (REQUIRED) A string representing the IPv4 CIDR prefix.
-            * "length" -- (REQUIRED) An integer representing the IPv4 CIDR length, with value from 0 to 32.
-* "ip6nets" -- (OPTIONAL) Such an object has the following members:
-    * "original_set" -- (OPTIONAL) An array of objects, each representing a contiguous block of IPv6 addresses.
-    * "transfer_set" -- (REQUIRED) An array of objects, each representing a contiguous block of IPv6 addresses.
-
-        Both "original_set" and "transfer_set" objects contain objects with the following members:
-        * "start_address" -- (REQUIRED) A string representing the start IPv6 address.
-        * "end_address" -- (REQUIRED) A string representing the end IPv6 address.
-        * "cidrs" -- (OPTIONAL) An array for IPv6 CIDR blocks which make up this IP block. Each IPv6 CIDR block object
-          in this array has the following members:
-            * "prefix" -- (REQUIRED) A string representing the IPv6 CIDR prefix.
-            * "length" -- (REQUIRED) An integer representing the IPv6 CIDR length, with value from 0 to 128.
-* "source_organization" -- (OPTIONAL) An object representing an organization that is the source of the transfer.
-* "recipient_organization" -- (OPTIONAL) An object representing an organization that is the recipient of the transfer.
-
-    Both "source_organization" and "recipient_organization" objects have the following members:
-    * "name" -- (OPTIONAL) A string representing the name of the organization.
-    * "country_code" -- (OPTIONAL) A string representing the 2-letter country code of the organization.
+* "asns" -- (OPTIONAL) See (#common_data_members).
+* "ip4nets" -- (OPTIONAL) See (#common_data_members).
+* "ip6nets" -- (OPTIONAL) See (#common_data_members).
+* "source_organization" -- (OPTIONAL) See (#common_data_members).
+* "recipient_organization" -- (OPTIONAL) See (#common_data_members).
 * "transfer_date" -- (OPTIONAL) A string representing the date and time of the completed transfer, per the date-time
   ABNF rule from [@!RFC3339], with a UTC offset of +00:00, denoted by a time-offset ABNF rule value of "Z".
-* "source_registration_date" -- (OPTIONAL) A string representing the date and time of the registration of source
-  resources in the source RIR, per the date-time ABNF rule from [@!RFC3339], with a UTC offset of +00:00, denoted by a
-  time-offset ABNF rule value of "Z".
-* "source_rir" -- (REQUIRED) A string identifying the source RIR, with possible values of "AFRINIC", "APNIC", "ARIN",
-  "LACNIC", or "RIPE NCC".
-* "recipient_rir" -- (REQUIRED) A string identifying the recipient RIR, with possible values of "AFRINIC", "APNIC",
-  "ARIN", "LACNIC", or "RIPE NCC".
-* "type" -- (REQUIRED) A string representing the type of transfer, with possible values of "MERGER_ACQUISITION" or
-  "RESOURCE_TRANSFER".
+* "source_registration_date" -- (OPTIONAL) See (#common_data_members).
+* "source_rir" -- (REQUIRED) See (#common_data_members).
+* "recipient_rir" -- (REQUIRED) See (#common_data_members).
+* "type" -- (REQUIRED) See (#common_data_members).
 
 Each completed transfer object MUST contain at least one of the "asns", "ip4nets", or "ip6nets" objects.
-
-An "original_set" object describes the set of resources in the registry from which the related "transfer_set" is taken.
-While these sets are often equivalent, the "original_set" can be larger than the "transfer_set". There are transfers in
-which the "original_set" is unknown: the recipient RIR may not have knowledge of the "original_set" in the registry of
-the source RIR.
 
 The "source_rir" and "recipient_rir" values MUST be identical for an intra-RIR transfer and distinct for an inter-RIR
 transfer.
 
+## In-Progress Transfers
+
 The "transfers_in_progress" object is an array of objects for in-progress intra-RIR and inter-RIR transfers. Each object
 within this array has the following members:
 
-* "asns" -- (OPTIONAL) Such an object has the following members:
-    * "original_set" -- (OPTIONAL) An array of objects, each representing a contiguous block of ASNs.
-    * "transfer_set" -- (REQUIRED) An array of objects, each representing a contiguous block of ASNs.
-
-        Both "original_set" and "transfer_set" arrays contain objects with the following members:
-        * "start" -- (REQUIRED) An unsigned 32-bit integer representing the start ASN.
-        * "end" -- (REQUIRED) An unsigned 32-bit integer representing the end ASN.
-* "ip4nets" -- (OPTIONAL) Such an object has the following members:
-    * "original_set" -- (OPTIONAL) An array of objects, each representing a contiguous block of IPv4 addresses.
-    * "transfer_set" -- (REQUIRED) An array of objects, each representing a contiguous block of IPv4 addresses.
-
-        Both "original_set" and "transfer_set" objects contain objects with the following members:
-        * "start_address" -- (REQUIRED) A string representing the start IPv4 address.
-        * "end_address" -- (REQUIRED) A string representing the end IPv4 address.
-        * "cidrs" -- (OPTIONAL) An array for IPv4 CIDR blocks which make up this IP block. Each IPv4 CIDR block object
-          in this array has the following members:
-            * "prefix" -- (REQUIRED) A string representing the IPv4 CIDR prefix.
-            * "length" -- (REQUIRED) An integer representing the IPv4 CIDR length, with value from 0 to 32.
-* "ip6nets" -- (OPTIONAL) Such an object has the following members:
-    * "original_set" -- (OPTIONAL) An array of objects, each representing a contiguous block of IPv6 addresses.
-    * "transfer_set" -- (REQUIRED) An array of objects, each representing a contiguous block of IPv6 addresses.
-
-        Both "original_set" and "transfer_set" objects contain objects with the following members:
-        * "start_address" -- (REQUIRED) A string representing the start IPv6 address.
-        * "end_address" -- (REQUIRED) A string representing the end IPv6 address.
-        * "cidrs" -- (OPTIONAL) An array for IPv6 CIDR blocks which make up this IP block. Each IPv6 CIDR block object
-          in this array has the following members:
-            * "prefix" -- (REQUIRED) A string representing the IPv6 CIDR prefix.
-            * "length" -- (REQUIRED) An integer representing the IPv6 CIDR length, with value from 0 to 128.
-* "source_organization" -- (OPTIONAL) An object representing an organization that is the source of the transfer.
-* "recipient_organization" -- (OPTIONAL) An object representing an organization that is the recipient of the transfer.
-
-    Both "source_organization" and "recipient_organization" objects have the following members:
-    * "name" -- (OPTIONAL) A string representing the name of the organization.
-    * "country_code" -- (OPTIONAL) A string representing the 2-letter country code of the organization.
-* "source_registration_date" -- (OPTIONAL) A string representing the date and time of the registration of source
-  resources in the source RIR, per the date-time ABNF rule from [@!RFC3339], with a UTC offset of +00:00, denoted by a
-  time-offset ABNF rule value of "Z".
-* "source_rir" -- (REQUIRED) A string identifying the source RIR, with possible values of "AFRINIC", "APNIC", "ARIN",
-  "LACNIC", or "RIPE NCC".
-* "recipient_rir" -- (REQUIRED) A string identifying the recipient RIR, with possible values of "AFRINIC", "APNIC",
-  "ARIN", "LACNIC", or "RIPE NCC".
-* "type" -- (REQUIRED) A string representing the type of transfer, with possible values of "MERGER_ACQUISITION" or
-  "RESOURCE_TRANSFER".
+* "asns" -- (OPTIONAL) See (#common_data_members).
+* "ip4nets" -- (OPTIONAL) See (#common_data_members).
+* "ip6nets" -- (OPTIONAL) See (#common_data_members).
+* "source_organization" -- (OPTIONAL) See (#common_data_members).
+* "recipient_organization" -- (OPTIONAL) See (#common_data_members).
+* "source_registration_date" -- (OPTIONAL) See (#common_data_members).
+* "source_rir" -- (REQUIRED) See (#common_data_members).
+* "recipient_rir" -- (REQUIRED) See (#common_data_members).
+* "type" -- (REQUIRED) See (#common_data_members).
 * "status" -- (REQUIRED) A string representing the status of a transfer, with possible values of "SOURCE_INITIALIZED"
   for the source side, and "RECIPIENT_ACCEPTED" for the recipient side.
 
 Each in-progress transfer object MUST contain at least one of the "asns", "ip4nets", or "ip6nets" objects.
-
-An "original_set" object describes the set of resources in the registry from which the related "transfer_set" is taken.
-While these sets are often equivalent, the "original_set" can be larger than the "transfer_set". There are transfers in
-which the "original_set" is unknown: the recipient RIR may not have knowledge of the "original_set" in the registry of
-the source RIR.
 
 The "source_rir" and "recipient_rir" values MUST be identical for an intra-RIR transfer and distinct for an inter-RIR
 transfer.
