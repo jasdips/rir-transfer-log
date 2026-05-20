@@ -122,7 +122,8 @@ members:
 * "UTC_offset" -- (REQUIRED) An integer representing the UTC offset of the producer in whole hours, with value from -12
   to 12.
 * "UTC_offset_minutes" -- (OPTIONAL) An integer representing the additional minutes component of the UTC offset, with a
-  value from 0 to 59. If "UTC_offset" is negative, this minutes value MUST also be applied as a negative offset.
+  value from 0 to 59. If "UTC_offset" is negative, this minutes value MUST also be applied as a negative offset. For
+  example, "UTC_offset" set to -5 and "UTC_offset_minutes" set to 30 represents a -05:30 offset.
 * "production_date" -- (REQUIRED) A string containing the date and time at which the document was produced, per the
   date-time ABNF rule from [@!RFC3339], with a UTC offset of +00:00, denoted by a time-offset ABNF rule value of "Z".
 * "records_interval" -- (REQUIRED) An object representing the period for which the records in the document are covered,
@@ -180,6 +181,24 @@ Each in-progress transfer object MUST contain at least one of the "asns", "ip4ne
 
 The "source_rir" and "recipient_rir" values MUST be identical for an intra-RIR transfer and distinct for an inter-RIR
 transfer.
+
+When a source organization initializes a transfer, the "status" value for the corresponding in-progress transfer object
+MUST be set to "SOURCE_INITIALIZED". At this point, only the source organization has a claim over the resources being
+transferred.
+
+When a recipient organization accepts that transfer, the "status" value for the corresponding in-progress transfer
+object MUST be set to "RECIPIENT_ACCEPTED". At this point, both the source and recipient organizations have a claim over
+the resources being transferred.
+
+When the source organization finalizes that transfer, it relinquishes its claim over the transferred resources, leaving
+the recipient organization with sole claim over those resources. Furthermore, the corresponding in-progress transfer
+object MUST be removed from the "transfers_in_progress" array. A corresponding completed transfer object MUST then be
+created in the "transfers" array of the involved RIRs' transfer logs: the single RIR's transfer log for an intra-RIR
+transfer, or both the source and recipient RIRs' transfer logs for an inter-RIR transfer.
+
+If that transfer is canceled at any point prior to finalization by the source, the corresponding in-progress transfer
+object MUST be removed from the "transfers_in_progress" array, leaving the source organization with sole claim over
+those resources.
 
 # JSON Schema {#json_schema}
 
