@@ -8,7 +8,7 @@ name = "Internet-Draft"
 value = "rir-transfer-log-01"
 stream = "IETF"
 status = "standard"
-date = 2026-05-19T00:00:00Z
+date = 2026-05-20T00:00:00Z
 
 [[author]]
 organization="Number Resource Organization"
@@ -19,9 +19,9 @@ email = "secretariat@nro.net"
 
 .# Abstract
 
-This document specifies version 4.1 of the Transfer Log JSON document that each Regional Internet Registry (RIR)
-produces to publish completed and in-progress intra-RIR and inter-RIR transfers of IP addresses and Autonomous System
-Numbers (ASNs) for a given period. It utilizes JSON Schema to formally define the format.
+This document specifies backwards-compatible version 4.1 of the Transfer Log JSON document that each Regional Internet
+Registry (RIR) produces to publish completed and in-progress intra-RIR and inter-RIR transfers of IP addresses and
+Autonomous System Numbers (ASNs) for a given period. It utilizes JSON Schema to formally define the format.
 
 {mainmatter}
 
@@ -38,19 +38,22 @@ feature of this specification.
 
 # Introduction
 
-This document specifies version 4.1 of the Transfer Log JSON document that each Regional Internet Registry (RIR)
-produces to publish completed and in-progress intra-RIR and inter-RIR transfers of IP addresses and Autonomous System
-Numbers (ASNs) for a given period. It utilizes JSON Schema [@!I-D.ietf-jsonschema-json-schema] to formally define the
-format.
+This document specifies backwards-compatible version 4.1 of the Transfer Log JSON document that each Regional Internet
+Registry (RIR) produces to publish completed and in-progress intra-RIR and inter-RIR transfers of IP addresses and
+Autonomous System Numbers (ASNs) for a given period. It utilizes JSON Schema [@!I-D.ietf-jsonschema-json-schema] to
+formally define the format.
 
 Salient changes from version 4.0 of Transfer Log [@!TRANSFER-LOG-4] are:
 
-* New "transfers_in_progress" member to track in-progress intra-RIR and inter-RIR transfers.
-* The format is now defined using JSON Schema instead of JSON Content Rules (JCR).
+* Added an optional "transfers_in_progress" member to track in-progress intra-RIR and inter-RIR transfers (see
+  (#in_progress_transfers)).
+* Added an optional "UTC_offset_minutes" member to the "version" metadata object to support minute-level granularity,
+  in addition to the existing "UTC_offset" member representing an offset in whole hours (see (#metadata)).
+* The format is now defined using JSON Schema instead of JSON Content Rules (JCR) (see (#json_schema)).
 
 # Common Data Members {#common_data_members}
 
-The JSON defined in (#transfer_log_format) can contain the following common members:
+The JSON defined in (#format) can contain the following common members:
 
 * "asns" -- An object representing ASNs, with the following members:
     * "original_set" -- (OPTIONAL) An array of objects, each representing a contiguous block of ASNs.
@@ -102,12 +105,12 @@ While these sets are often equivalent, the "original_set" can be larger than the
 which the "original_set" is unknown: the recipient RIR may not have knowledge of the "original_set" in the registry of
 the source RIR.
 
-# Format {#transfer_log_format}
+# Format {#format}
 
 In a Transfer Log JSON document, the root object MUST contain the "version" and "transfers" members, and MAY contain
 the "transfers_in_progress" member.
 
-## Metadata
+## Metadata {#metadata}
 
 The "version" member is an object representing the metadata information for the produced document, and has the following
 members:
@@ -116,7 +119,10 @@ members:
   "4.1" for this version.
 * "producer" -- (REQUIRED) A string identifying the organization, either one of the RIRs or the NRO, that produced the
   Transfer Log JSON document, with possible values of "AFRINIC", "APNIC", "ARIN", "LACNIC", "RIPE NCC", or "NRO".
-* "UTC_offset" -- (REQUIRED) An integer representing the UTC offset of the producer, with value from -12 to 12.
+* "UTC_offset" -- (REQUIRED) An integer representing the UTC offset of the producer in whole hours, with value from -12
+  to 12.
+* "UTC_offset_minutes" -- (OPTIONAL) An integer representing the additional minutes component of the UTC offset, with a
+  value from 0 to 59. If "UTC_offset" is negative, this minutes value MUST also be applied as a negative offset.
 * "production_date" -- (REQUIRED) A string containing the date and time at which the document was produced, per the
   date-time ABNF rule from [@!RFC3339], with a UTC offset of +00:00, denoted by a time-offset ABNF rule value of "Z".
 * "records_interval" -- (REQUIRED) An object representing the period for which the records in the document are covered,
@@ -141,7 +147,7 @@ array has the following members:
 * "ip6nets" -- (OPTIONAL) See (#common_data_members).
 * "source_organization" -- (OPTIONAL) See (#common_data_members).
 * "recipient_organization" -- (OPTIONAL) See (#common_data_members).
-* "transfer_date" -- (OPTIONAL) A string representing the date and time of the completed transfer, per the date-time
+* "transfer_date" -- (REQUIRED) A string representing the date and time of the completed transfer, per the date-time
   ABNF rule from [@!RFC3339], with a UTC offset of +00:00, denoted by a time-offset ABNF rule value of "Z".
 * "source_registration_date" -- (OPTIONAL) See (#common_data_members).
 * "source_rir" -- (REQUIRED) See (#common_data_members).
@@ -153,7 +159,7 @@ Each completed transfer object MUST contain at least one of the "asns", "ip4nets
 The "source_rir" and "recipient_rir" values MUST be identical for an intra-RIR transfer and distinct for an inter-RIR
 transfer.
 
-## In-Progress Transfers
+## In-Progress Transfers {#in_progress_transfers}
 
 The "transfers_in_progress" member is an array of objects for in-progress intra-RIR and inter-RIR transfers. Each object
 within this array has the following members:
@@ -214,6 +220,11 @@ The following JSON Schema formally defines the format of a Transfer Log JSON doc
           "minimum": -12,
           "maximum": 12
         },
+        "UTC_offset_minutes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 59
+        },
         "production_date": {
           "type": "string",
           "format": "date-time",
@@ -248,6 +259,7 @@ The following JSON Schema formally defines the format of a Transfer Log JSON doc
       "items": {
         "type": "object",
         "required": [
+          "transfer_date",
           "source_rir",
           "recipient_rir",
           "type"
@@ -469,6 +481,7 @@ The following JSON Schema formally defines the format of a Transfer Log JSON doc
   "version": {
     "stats_version": "4.1",
     "UTC_offset": -4,
+    "UTC_offset_minutes": 0,
     "producer": "ARIN",
     "production_date": "2026-04-15T03:59:11Z",
     "records_interval": {
