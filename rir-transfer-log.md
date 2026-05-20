@@ -576,6 +576,36 @@ The following JSON Schema formally defines the format of a Transfer Log JSON doc
   ],
   "transfers_in_progress": [
     {
+      "asns": {
+        "original_set": [
+          {
+            "start": 65550,
+            "end": 65550
+          }
+        ],
+        "transfer_set": [
+          {
+            "start": 65550,
+            "end": 65550
+          }
+        ]
+      },
+      "recipient_organization": {
+        "name": "Example5 Inc.",
+        "country_code": "US"
+      },
+      "recipient_rir": "ARIN",
+      "source_organization": {
+        "name": "Example6 Inc.",
+        "country_code": "AU"
+      },
+      "source_registration_date": "2002-05-18T04:00:00Z",
+      "source_rir": "APNIC",
+      "transfer_date": "2013-08-06T17:46:00Z",
+      "type": "MERGER_ACQUISITION",
+      "status": "RECIPIENT_ACCEPTED"
+    },
+    {
       "ip4nets": {
         "original_set": [
           {
@@ -591,12 +621,12 @@ The following JSON Schema formally defines the format of a Transfer Log JSON doc
         ]
       },
       "recipient_organization": {
-        "name": "Example5 Inc.",
+        "name": "Example7 Inc.",
         "country_code": "NL"
       },
       "recipient_rir": "RIPE NCC",
       "source_organization": {
-        "name": "Example6 Inc.",
+        "name": "Example8 Inc.",
         "country_code": "CA"
       },
       "source_registration_date": "2013-04-01T21:13:31Z",
@@ -611,10 +641,12 @@ The following JSON Schema formally defines the format of a Transfer Log JSON doc
 In this example:
 
 * The object with the "asns" member in the "transfers" array illustrates a completed inter-RIR transfer for the
-  recipient RIR.
+  recipient side.
 * The object with the "ip6nets" member in the "transfers" array illustrates a completed intra-RIR transfer.
+* The object with the "asns" member in the "transfers_in_progress" array illustrates an in-progress inter-RIR transfer
+  with the "RECIPIENT_ACCEPTED" status for the recipient side.
 * The object with the "ip4nets" member in the "transfers_in_progress" array illustrates an in-progress inter-RIR
-  transfer with the "SOURCE_INITIALIZED" status for the source RIR.
+  transfer with the "SOURCE_INITIALIZED" status for the source side.
 
 This example validates against the JSON Schema in (#json_schema), per [@JSON-SCHEMA-VALIDATOR].
 
