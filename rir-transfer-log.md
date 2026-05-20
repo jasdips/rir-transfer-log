@@ -640,13 +640,13 @@ The following JSON Schema formally defines the format of a Transfer Log JSON doc
 
 In this example:
 
-* The object with the "asns" member in the "transfers" array illustrates a completed inter-RIR transfer for the
+* The object with the "asns" member in the "transfers" array illustrates a completed inter-RIR transfer on the
   recipient side.
 * The object with the "ip6nets" member in the "transfers" array illustrates a completed intra-RIR transfer.
 * The object with the "asns" member in the "transfers_in_progress" array illustrates an in-progress inter-RIR transfer
-  with the "RECIPIENT_ACCEPTED" status for the recipient side.
+  with the "RECIPIENT_ACCEPTED" status on the recipient side.
 * The object with the "ip4nets" member in the "transfers_in_progress" array illustrates an in-progress inter-RIR
-  transfer with the "SOURCE_INITIALIZED" status for the source side.
+  transfer with the "SOURCE_INITIALIZED" status on the source side.
 
 This example validates against the JSON Schema in (#json_schema), per [@JSON-SCHEMA-VALIDATOR].
 
