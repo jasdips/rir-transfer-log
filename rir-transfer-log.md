@@ -93,12 +93,14 @@ The JSON defined in (#format) can contain the following common members:
 * "source_registration_date" -- A string representing the date and time of the registration of source resources in the
   source RIR, per the date-time ABNF rule from [@!RFC3339], with a UTC offset of +00:00, denoted by a time-offset ABNF
   rule value of "Z".
-* "source_rir" -- A string identifying the source RIR, with possible values of "AFRINIC", "APNIC", "ARIN", "LACNIC", or
+* "source_rir" -- A string identifying the source RIR, with valid values of "AFRINIC", "APNIC", "ARIN", "LACNIC", or
   "RIPE NCC".
-* "recipient_rir" -- A string identifying the recipient RIR, with possible values of "AFRINIC", "APNIC", "ARIN",
-  "LACNIC", or "RIPE NCC".
-* "type" -- A string representing the type of transfer, with possible values of "MERGER_ACQUISITION" or
-  "RESOURCE_TRANSFER".
+* "recipient_rir" -- A string identifying the recipient RIR, with valid values of "AFRINIC", "APNIC", "ARIN", "LACNIC",
+  or "RIPE NCC".
+* "type" -- A string representing the type of transfer, with valid values of "MERGER_ACQUISITION" or
+  "RESOURCE_TRANSFER". "MERGER_ACQUISITION" indicates a transfer resulting from corporate restructuring, mergers,
+  acquisitions, or legal identity changes, whereas "RESOURCE_TRANSFER" indicates a direct contractual transfer of
+  specific number resources between independent entities.
 
 An "original_set" object describes the set of resources in the registry from which the related "transfer_set" is taken.
 While these sets are often equivalent, the "original_set" can be larger than the "transfer_set". There are transfers in
@@ -118,7 +120,7 @@ members:
 * "stats_version" -- (REQUIRED) A string representing the version of the Transfer Log JSON document, with a value of
   "4.1" for this version.
 * "producer" -- (REQUIRED) A string identifying the organization, either one of the RIRs or the NRO, that produced the
-  Transfer Log JSON document, with possible values of "AFRINIC", "APNIC", "ARIN", "LACNIC", "RIPE NCC", or "NRO".
+  Transfer Log JSON document, with valid values of "AFRINIC", "APNIC", "ARIN", "LACNIC", "RIPE NCC", or "NRO".
 * "UTC_offset" -- (REQUIRED) An integer representing the UTC offset of the producer in whole hours, with value from -12
   to 12.
 * "UTC_offset_minutes" -- (OPTIONAL) An integer representing the additional minutes component of the UTC offset, with a
@@ -174,8 +176,8 @@ within this array has the following members:
 * "source_rir" -- (REQUIRED) See (#common_data_members).
 * "recipient_rir" -- (REQUIRED) See (#common_data_members).
 * "type" -- (REQUIRED) See (#common_data_members).
-* "status" -- (REQUIRED) A string representing the status of a transfer, with possible values of "SOURCE_INITIALIZED"
-  for the source side and "RECIPIENT_ACCEPTED" for the recipient side.
+* "status" -- (REQUIRED) A string representing the status of a transfer, with valid values of "SOURCE_INITIALIZED"
+  for the source side or "RECIPIENT_ACCEPTED" for the recipient side.
 
 Each in-progress transfer object MUST contain at least one of the "asns", "ip4nets", or "ip6nets" objects.
 
